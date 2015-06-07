@@ -1,0 +1,11 @@
+{
+  "env": {
+    "mocha": true
+  },
+
+  "globals": {
+    "Assert": true,
+    "Humongo": true,
+    "Config": true
+  }
+}
