@@ -32,6 +32,7 @@ describe('Model', function () {
   after(function () { vanilla.db.close(); });
   after(function () { chocolate.database.disconnect(); });
 
+  beforeEach(function (done) { vanilla.Misc.remove({}, done); });
 
   it('requires a database', function () {
     /* eslint-disable */
@@ -48,7 +49,21 @@ describe('Model', function () {
     /* eslint-enable */
   });
 
-  it('can insert a document');
+  it('can insert a document', function (done) {
+
+    var document = { hello: 'world' };
+
+    Async.waterfall([
+      function (next) { chocolate.Misc.insert(document, next); },
+      function (result, next) { vanilla.Misc.find({ _id: result._id }).toArray(next); }
+    ], function (error, result) {
+
+      Assert.ifError(error);
+      Assert.equal(result[0].hello, document.hello);
+      done();
+    });
+  });
+
   it('can update a document');
   it('can remove a document');
   it('can find documents');
