@@ -112,4 +112,45 @@ describe('Schema', function () {
     Assert.equal(error.field, 'data.x');
     Assert.equal(error.message, 'is required');
   });
+
+  describe('Document', function () {
+
+    var Coord;
+
+    before(function () {
+
+      Coord = new Mongold.Model('coord', database);
+      Coord.attachSchema(schemas.coord);
+      Coord.attachSchema(schemas.coordPlus);
+    });
+
+    it('checks every document on construction', function () {
+      /* eslint-disable */
+      new Coord({ x: 5, y: 2, z: 3 });
+      Assert.throws(function () { new Coord({}); }, /failed(.*)validation(.*)data\.x/);
+      /* eslint-enable */
+    });
+
+    it('can check itself', function () {
+
+      var coord = new Coord({ x: 5, y: 2, z: 3 });
+      coord.z = 'hello';
+      Assert.throws(function () { coord.check(); }, /failed(.*)validation(.*)data\.z/);
+    });
+
+    it('can validate itself', function () {
+
+      var coord = new Coord({ x: 5, y: 2, z: 3 });
+      delete coord.x;
+      coord.z = 'hello';
+      var errors = coord.validate();
+      Assert.ok(_.isArray(errors));
+      Assert.equal(errors.length, 2);
+      Assert.equal(errors[0].field, 'data.x');
+      Assert.equal(errors[1].field, 'data.z');
+      var error = coord.validate(false);
+      Assert.ok(!_.isArray(error));
+      Assert.equal(error.field, 'data.x');
+    });
+  });
 });
