@@ -1,4 +1,3 @@
-var _ = require('lodash');
 var Assert = require('assert');
 var Async = require('async');
 var MongoClient = require('mongodb').MongoClient;
@@ -61,7 +60,6 @@ describe('Model', function () {
       Assert.throws(function () { chocolate.Test.insert(); }, /document(.*)required/);
       Assert.throws(function () { chocolate.Test.update(); }, /selector(.*)required/);
       Assert.throws(function () { chocolate.Test.update({}); }, /modifier(.*)required/);
-      Assert.throws(function () { chocolate.Test.remove(); }, /selector(.*)required/);
     });
 
     it('can insert a document', function (done) {
