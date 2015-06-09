@@ -1,3 +1,4 @@
+var _ = require('lodash');
 var Assert = require('assert');
 var Async = require('async');
 var MongoClient = require('mongodb').MongoClient;
@@ -48,6 +49,43 @@ describe('Model', function () {
     new Mongold.Model('model');
     Mongold.disconnect(url);
     /* eslint-enable */
+  });
+
+  describe('Document', function () {
+
+    it('is a constructor function', function () {
+
+      Assert.ok(_.isFunction(chocolate.Test));
+      Assert.ok(_.keys(chocolate.Test.prototype).length === 0);
+
+      // Test the prototype chain
+      // EventEmitter won't work, @see ../lib/model/index.js
+      Assert.ok(chocolate.Test instanceof Mongold.Model);
+      Assert.ok(chocolate.Test instanceof Function);
+      Assert.ok(chocolate.Test instanceof Object);
+    });
+
+    it('is correctly inherited', function () {
+
+      var test = new chocolate.Test({});
+
+      // Test the prototype chain
+      Assert.ok(test instanceof chocolate.Test);
+      Assert.ok(test instanceof Object);
+    });
+
+    it('can have its prototype customized', function () {
+
+      // ES6: template string
+      chocolate.Test.prototype.toString = function () { return '(' + this.x + ', ' + this.y + ')'; };
+
+      var test = new chocolate.Test({ x: 5, y: 3 });
+
+      Assert.ok(!test.hasOwnProperty('toString'));
+      Assert.equal(test.toString(), '(5, 3)');
+
+      delete chocolate.Test.prototype.toString;
+    });
   });
 
   describe('write operations', function () {
