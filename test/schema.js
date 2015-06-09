@@ -70,11 +70,22 @@ describe('Schema', function () {
     Assert.ok(_.isEqual(schema.properties.z, schemas.coordPlus.properties.z));
   });
 
+  // ES6: arrow function
+  it('can check without a schema', function () { Test.check({}); });
+
   it('can check against a schema', function () {
 
     Test.attachSchema(schemas.coord);
     Test.attachSchema(schemas.coordPlus);
     Assert.throws(function () { Test.check({}); }, /failed(.*)validation(.*)data\.x/);
+  });
+
+  // ES6: arrow function
+  it('can validate without a schema', function () {
+
+    var errors = Test.validate({});
+    Assert.ok(_.isArray(errors));
+    Assert.equal(errors.length, 0);
   });
 
   it('can get errors from a schema validation', function () {
