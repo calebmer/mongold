@@ -53,6 +53,31 @@ describe('Model', () => {
     /* eslint-enable */
   });
 
+  it('can add indexes', done => {
+
+    chocolate.Test.index('a');
+    chocolate.Test.index(['b', 'c']);
+    chocolate.Test.index({ d: 1, e: -1 });
+
+    vanilla.Test.indexInformation((error, result) => {
+
+      Assert.ifError(error);
+
+      Assert.equal(result.a_1[0][0], 'a');
+      Assert.equal(result.a_1[0][1], 1);
+      Assert.equal(result.b_1_c_1[0][0], 'b');
+      Assert.equal(result.b_1_c_1[0][1], 1);
+      Assert.equal(result.b_1_c_1[1][0], 'c');
+      Assert.equal(result.b_1_c_1[1][1], 1);
+      Assert.equal(result['d_1_e_-1'][0][0], 'd');
+      Assert.equal(result['d_1_e_-1'][0][1], 1);
+      Assert.equal(result['d_1_e_-1'][1][0], 'e');
+      Assert.equal(result['d_1_e_-1'][1][1], -1);
+
+      vanilla.Test.dropAllIndexes(done);
+    });
+  });
+
   describe('write operations', () => {
 
     beforeEach(done => vanilla.Test.remove({}, done));
