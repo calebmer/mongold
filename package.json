@@ -1,9 +1,11 @@
 {
   "name": "mongold",
   "version": "0.0.1",
-  "main": "lib/index.js",
+  "main": "dist/index.js",
   "scripts": {
-    "test": "make test"
+    "compile": "mkdir -p dist/ && node_modules/.bin/babel lib --out-dir dist",
+    "test": "node_modules/.bin/mocha -r node_modules/babel/register",
+    "prepublish": "npm run compile"
   },
   "config": {
     "blanket": {
@@ -18,8 +20,7 @@
     "mongodb": "^2.0.33"
   },
   "devDependencies": {
-    "blanket": "^1.1.7",
-    "mocha": "^2.2.5",
-    "nodemon": "^1.3.7"
+    "babel": "^5.5.6",
+    "mocha": "^2.2.5"
   }
 }
