@@ -1,20 +1,22 @@
-var _ = require('lodash');
-var Assert = require('assert');
-var Async = require('async');
-var MongoClient = require('mongodb').MongoClient;
-var Mongold = require('../lib');
-var url = 'mongodb://localhost:27017/mongold-test';
+import * as _ from 'lodash';
+import * as Assert from 'assert';
+import * as Async from 'async';
+import * as Mongold from '../lib';
+import {MongoClient} from 'mongodb';
 
-describe('Model', function () {
+var internals = {};
+internals.url = 'mongodb://localhost:27017/mongold-test';
+
+describe('Model', () => {
 
   var collectionName = 'misc';
 
   var vanilla = {};
   var chocolate = {};
 
-  before(function (done) {
+  before(done => {
 
-    MongoClient.connect(url, function (error, db) {
+    MongoClient.connect(internals.url, (error, db) => {
 
       Assert.ifError(error);
       vanilla.db = db;
@@ -23,54 +25,54 @@ describe('Model', function () {
     });
   });
 
-  before(function (done) {
+  before(done => {
 
-    chocolate.database = new Mongold.Database(url);
+    chocolate.database = new Mongold.Database(internals.url);
     chocolate.Test = new Mongold.Model(collectionName, chocolate.database);
-    chocolate.database.on('ready', function () { done(); });
+    chocolate.database.on('ready', () => done());
   });
 
   // ES6: arrow functions
-  after(function (done) { vanilla.Test.remove({}, done); });
-  after(function () { vanilla.db.close(); });
-  after(function () { chocolate.database.disconnect(); });
+  after(done => vanilla.Test.remove({}, done));
+  after(() => vanilla.db.close());
+  after(() => chocolate.database.disconnect());
 
-  it('requires a database', function () {
+  it('requires a database', () => {
     /* eslint-disable */
-    Assert.throws(function () { new Mongold.Model('model', undefined); }, /require(.*)database/i);
+    Assert.throws(() => new Mongold.Model('model', undefined), /require(.*)database/i);
     new Mongold.Model('model', chocolate.database);
     /* eslint-enable */
   });
 
-  it('can use the default database', function (done) {
+  it('can use the default database', done => {
     /* eslint-disable */
-    Mongold.connect(url);
+    Mongold.connect(internals.url);
     Mongold.database.on('close', done);
     new Mongold.Model('model');
-    Mongold.disconnect(url);
+    Mongold.disconnect();
     /* eslint-enable */
   });
 
-  describe('write operations', function () {
+  describe('write operations', () => {
 
-    // ES6: arrow function
-    beforeEach(function (done) { vanilla.Test.remove({}, done); });
+    beforeEach(done => vanilla.Test.remove({}, done));
 
-    it('throws when incorrectly executed', function () {
+    it('throws when incorrectly executed', () => {
 
-      Assert.throws(function () { chocolate.Test.insert(); }, /document(.*)required/);
-      Assert.throws(function () { chocolate.Test.update(); }, /selector(.*)required/);
-      Assert.throws(function () { chocolate.Test.update({}); }, /modifier(.*)required/);
+      Assert.throws(() => chocolate.Test.insert(), /document(.*)required/);
+      Assert.throws(() => chocolate.Test.save(), /document(.*)required/);
+      Assert.throws(() => chocolate.Test.update(), /selector(.*)required/);
+      Assert.throws(() => chocolate.Test.update({}), /modifier(.*)required/);
     });
 
-    it('can insert a document', function (done) {
+    it('can insert a document', done => {
 
       var document = { hello: 'world' };
 
       Async.waterfall([
-        function (next) { chocolate.Test.insert(document, next); },
-        function (id, next) { vanilla.Test.find({ _id: id }).toArray(next); }
-      ], function (error, result) {
+        next => chocolate.Test.insert(document, next),
+        (id, next) => vanilla.Test.find({ _id: id }).toArray(next)
+      ], (error, result) => {
 
         Assert.ifError(error);
         Assert.equal(result[0].hello, document.hello);
@@ -78,7 +80,7 @@ describe('Model', function () {
       });
     });
 
-    it('can insert multiple documents', function (done) {
+    it('can insert multiple documents', done => {
 
       var documents = [
         { x: 2, y: 9, z: 2 },
@@ -86,15 +88,16 @@ describe('Model', function () {
       ];
 
       Async.waterfall([
-        function (next) { chocolate.Test.insert(documents, next); },
-        function (ids, next) {
+        next => chocolate.Test.insert(documents, next),
+
+        (ids, next) => {
 
           Assert.equal(ids.length, 2);
           Assert.ok(ids[0] instanceof Mongold.Id);
 
           vanilla.Test.find({ _id: { $in: ids } }).toArray(next);
         }
-      ], function (error, results) {
+      ], (error, results) => {
 
         Assert.ifError(error);
 
@@ -110,7 +113,7 @@ describe('Model', function () {
       });
     });
 
-    it('can save a document', function (done) {
+    it('can save a document', done => {
 
       var newHello = 'world';
       var document = {
@@ -119,19 +122,18 @@ describe('Model', function () {
       };
 
       Async.waterfall([
-        function (next) { chocolate.Test.save(document, next); },
-        function (id, next) {
+        next => chocolate.Test.save(document, next),
+
+        (id, next) => {
 
           Assert.ok(id);
           document._id = id;
           document.hello = newHello;
           chocolate.Test.save(document, next);
         },
-        function (id, next) {
 
-          vanilla.Test.find({ _id: id }).toArray(next);
-        }
-      ], function (error, results) {
+        (id, next) => vanilla.Test.find({ _id: id }).toArray(next)
+      ], (error, results) => {
 
         Assert.ifError(error);
 
@@ -143,7 +145,7 @@ describe('Model', function () {
       });
     });
 
-    it('can update a document', function (done) {
+    it('can update a document', done => {
 
       var searchA = 8;
       var newB = 5;
@@ -155,9 +157,9 @@ describe('Model', function () {
       ];
 
       Async.waterfall([
-        function (next) { vanilla.Test.insert(documents, next); },
+        next => vanilla.Test.insert(documents, next),
 
-        function (response, next) {
+        (response, next) => {
 
           Assert.ok(response.result.ok);
           Assert.equal(response.ops.length, 3);
@@ -170,7 +172,7 @@ describe('Model', function () {
           next);
         },
 
-        function (modified, next) {
+        (modified, next) => {
 
           Assert.equal(modified, 1);
 
@@ -182,25 +184,25 @@ describe('Model', function () {
           next);
         },
 
-        function (modified, next) {
+        (modified, next) => {
 
           Assert.equal(modified, 2);
 
           vanilla.Test.find().toArray(next);
         }
-      ], function (error, results) {
+      ], (error, results) => {
 
         Assert.ifError(error);
         Assert.equal(results.length, documents.length);
 
         // ES6: arrow function
-        results.forEach(function (document) { Assert.equal(document.b, newB); });
+        results.forEach(document => Assert.equal(document.b, newB));
 
         done();
       });
     });
 
-    it('can remove a document', function (done) {
+    it('can remove a document', done => {
 
       var searchHello = 'world';
 
@@ -211,9 +213,9 @@ describe('Model', function () {
       ];
 
       Async.waterfall([
-        function (next) { vanilla.Test.insert(documents, next); },
+        next => vanilla.Test.insert(documents, next),
 
-        function (response, next) {
+        (response, next) => {
 
           Assert.ok(response.result.ok);
           Assert.equal(response.ops.length, 3);
@@ -223,7 +225,7 @@ describe('Model', function () {
           }, next);
         },
 
-        function (modified, next) {
+        (modified, next) => {
 
           Assert.equal(modified, 1);
 
@@ -232,13 +234,13 @@ describe('Model', function () {
           }, next);
         },
 
-        function (modified, next) {
+        (modified, next) => {
 
           Assert.equal(modified, 2);
 
           vanilla.Test.find().toArray(next);
         }
-      ], function (error, results) {
+      ], (error, results) => {
 
         Assert.ifError(error);
         Assert.equal(results.length, 0);
@@ -248,7 +250,7 @@ describe('Model', function () {
     });
   });
 
-  describe('read operations', function () {
+  describe('read operations', () => {
 
     var documents = [
       { x: 1, y: 5 },
@@ -258,14 +260,13 @@ describe('Model', function () {
       { x: 5, y: 1 }
     ];
 
-    // ES6: arrow functions
-    before(function (done) { vanilla.Test.insert(documents, done); });
+    before(done => vanilla.Test.insert(documents, done));
 
-    var readTest = function (find, doAssert) {
+    var readTest = (find, doAssert) => {
 
-      return function (done) {
+      return done => {
 
-        find(function (error, results) {
+        find((error, results) => {
 
           Assert.ifError(error);
           doAssert(results);
@@ -283,34 +284,29 @@ describe('Model', function () {
     // ));
 
     it('can find all documents', readTest(
-      // ES6: arrow function
-      function (next) { chocolate.Test.find(next); },
-      function (results) {
+      next => chocolate.Test.find(next),
+      results => {
 
         Assert.equal(results.length, documents.length);
-        // ES6: arrow function
-        documents.forEach(function (document, index) { Assert.equal(document.x, results[index].x); });
+        documents.forEach((document, index) => Assert.equal(document.x, results[index].x));
       }
     ));
 
     it('can find documents with a selector', readTest(
-      // ES6: arrow function
-      function (next) { chocolate.Test.find({ x: { $gt: 3 } }, next); },
-      function (results) {
+      next => chocolate.Test.find({ x: { $gt: 3 } }, next),
+      results => {
 
         Assert.equal(results.length, 2);
-        // ES6: arrow function
-        results.forEach(function (result) { Assert.ok(result.x > 3); });
+        results.forEach(result => Assert.ok(result.x > 3));
       }
     ));
 
     it('can exclude properties with shorthand', readTest(
-      // ES6: arrow function
-      function (next) { chocolate.Test.find({}, { exclude: ['x'] }, next); },
-      function (results) {
+      next => chocolate.Test.find({}, { exclude: ['x'] }, next),
+      results => {
 
         Assert.equal(results.length, documents.length);
-        results.forEach(function (result) {
+        results.forEach(result => {
 
           Assert.ok(!result.x);
           Assert.ok(result.y);
@@ -319,12 +315,11 @@ describe('Model', function () {
     ));
 
     it('can include properties with shorthand', readTest(
-      // ES6: arrow function
-      function (next) { chocolate.Test.find({}, { include: ['y'] }, next); },
-      function (results) {
+      next => chocolate.Test.find({}, { include: ['y'] }, next),
+      results => {
 
         Assert.equal(results.length, documents.length);
-        results.forEach(function (result) {
+        results.forEach(result => {
 
           Assert.ok(!result.x);
           Assert.ok(result.y);
@@ -333,12 +328,11 @@ describe('Model', function () {
     ));
 
     it('can set included/excluded properties without the shorthand', readTest(
-      // ES6: arrow function
-      function (next) { chocolate.Test.find({}, { projection: { x: 0 } }, next); },
-      function (results) {
+      next => chocolate.Test.find({}, { projection: { x: 0 } }, next),
+      results => {
 
         Assert.equal(results.length, documents.length);
-        results.forEach(function (result) {
+        results.forEach(result => {
 
           Assert.ok(!result.x);
           Assert.ok(result.y);
@@ -347,14 +341,13 @@ describe('Model', function () {
     ));
 
     it('can sort documents with the shorthand', readTest(
-      // ES6: arrow function
-      function (next) { chocolate.Test.find({}, { sort: { x: 'desc' } }, next); },
-      function (results) {
+      next => chocolate.Test.find({}, { sort: { x: 'desc' } }, next),
+      results => {
 
         Assert.equal(results.length, documents.length);
 
         var lastValue;
-        results.forEach(function (result) {
+        results.forEach(result => {
 
           if (!lastValue) {
             lastValue = result.x;
@@ -367,14 +360,13 @@ describe('Model', function () {
     ));
 
     it('can sort documents without the shorthand', readTest(
-      // ES6: arrow function
-      function (next) { chocolate.Test.find({}, { sort: { x: -1 } }, next); },
-      function (results) {
+      next => chocolate.Test.find({}, { sort: { x: -1 } }, next),
+      results => {
 
         Assert.equal(results.length, documents.length);
 
         var lastValue;
-        results.forEach(function (result) {
+        results.forEach(result => {
 
           if (!lastValue) {
             lastValue = result.x;
@@ -387,29 +379,27 @@ describe('Model', function () {
     ));
 
     it('can skip documents', readTest(
-      // ES6: arrow function
-      function (next) { chocolate.Test.find({}, { skip: 2 }, next); },
-      function (results) {
+      next => chocolate.Test.find({}, { skip: 2 }, next),
+      results => {
 
         Assert.equal(results.length, 3);
-        results.forEach(function (result) { Assert.ok(result.x > 2); });
+        results.forEach(result => Assert.ok(result.x > 2));
       }
     ));
 
     it('can limit documents', readTest(
-      // ES6: arrow function
-      function (next) { chocolate.Test.find({}, { limit: 2 }, next); },
-      function (results) {
+      next => chocolate.Test.find({}, { limit: 2 }, next),
+      results => {
 
         Assert.equal(results.length, 2);
-        results.forEach(function (result) { Assert.ok(result.x < 3); });
+        results.forEach(result => Assert.ok(result.x < 3));
       }
     ));
   });
 
-  describe('Document', function () {
+  describe('Document', () => {
 
-    it('is a constructor function', function () {
+    it('is a constructor function', () => {
 
       Assert.ok(_.isFunction(chocolate.Test));
       Assert.ok(_.keys(chocolate.Test.prototype).length === 0);
@@ -421,7 +411,7 @@ describe('Model', function () {
       Assert.ok(chocolate.Test instanceof Object);
     });
 
-    it('is correctly inherited', function () {
+    it('is correctly inherited', () => {
 
       var test = new chocolate.Test({});
 
@@ -430,10 +420,9 @@ describe('Model', function () {
       Assert.ok(test instanceof Object);
     });
 
-    it('can have its prototype customized', function () {
+    it('can have its prototype customized', () => {
 
-      // ES6: template string
-      chocolate.Test.prototype.toString = function () { return '(' + this.x + ', ' + this.y + ')'; };
+      chocolate.Test.prototype.toString = function () { return `(${this.x}, ${this.y})`; };
 
       var test = new chocolate.Test({ x: 5, y: 3 });
 
@@ -443,7 +432,7 @@ describe('Model', function () {
       delete chocolate.Test.prototype.toString;
     });
 
-    it('can save a document after validation', function (done) {
+    it('can save a document after validation', done => {
 
       chocolate.Test.attachSchema({
         'type': 'object',
@@ -459,15 +448,14 @@ describe('Model', function () {
 
       test2.x = 'hello';
 
-      // ES6: arrow function
-      Assert.throws(function () { test2.save(); }, /failed(.*)validation(.*)data\.x/);
+      Assert.throws(() => { test2.save(); }, /failed(.*)validation(.*)data\.x/);
 
-      test1.save(function (error1, id1) {
+      test1.save((error1, id1) => {
 
         Assert.ok(id1);
         test1.x = 7;
 
-        test1.save(function (error2, id2) {
+        test1.save((error2, id2) => {
 
           Assert.equal(id1, id2);
           done();

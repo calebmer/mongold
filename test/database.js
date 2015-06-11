@@ -1,18 +1,20 @@
-var Mongold = require('../lib');
-var url = 'mongodb://localhost:27017/mongold-test';
+import * as Mongold from '../lib';
 
-describe('Database', function () {
+var internals = {};
+internals.url = 'mongodb://localhost:27017/mongold-test';
 
-  it('can connect and disconnect', function (done) {
+describe('Database', () => {
 
-    var database = new Mongold.Database(url);
+  it('can connect and disconnect', done => {
+
+    var database = new Mongold.Database(internals.url);
     database.on('close', done);
     database.disconnect();
   });
 
-  it('can connect and disconnect using the shortcut', function (done) {
+  it('can connect and disconnect using the shortcut', done => {
 
-    Mongold.connect(url);
+    Mongold.connect(internals.url);
     Mongold.database.on('close', done);
     Mongold.disconnect();
   });

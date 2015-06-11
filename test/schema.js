@@ -3,7 +3,7 @@ var Assert = require('assert');
 var Mongold = require('../lib');
 var url = 'mongodb://localhost:27017/mongold-test';
 
-describe('Schema', function () {
+describe('Schema', () => {
 
   var schemas = {
     coord: {
@@ -26,37 +26,34 @@ describe('Schema', function () {
   var database;
   var Test;
 
-  before(function (done) {
+  before(done => {
 
     database = new Mongold.Database(url);
     Test = new Mongold.Model('test', database);
-    database.on('ready', function () { done(); });
+    database.on('ready', () => done());
   });
 
-  // ES6: arrow function
-  after(function () { database.disconnect(); });
+  after(() => database.disconnect());
 
-  // ES6: arrow function
-  beforeEach(function () { Test.detachSchema(); });
-  beforeEach(function (done) { Test.remove(done); });
+  beforeEach(() => Test.detachSchema());
+  beforeEach(done => Test.remove(done));
 
-  // ES6: arrow function
-  it('can attach a schema', function () { Test.attachSchema(schemas.coord); });
+  it('can attach a schema', () => Test.attachSchema(schemas.coord));
 
-  it('get attached schema', function () {
+  it('get attached schema', () => {
 
     Test.attachSchema(schemas.coord);
     Assert.ok(_.isEqual(Test.schema(), schemas.coord));
   });
 
-  it('can remove schema', function () {
+  it('can remove schema', () => {
 
     Test.attachSchema(schemas.coord);
     Test.detachSchema();
     Assert.ok(_.isEqual(Test.schema(), {}));
   });
 
-  it('can attach and get multiple schemas', function () {
+  it('can attach and get multiple schemas', () => {
 
     Test.attachSchema(schemas.coord);
     Test.attachSchema(schemas.coordPlus);
@@ -70,25 +67,24 @@ describe('Schema', function () {
     Assert.ok(_.isEqual(schema.properties.z, schemas.coordPlus.properties.z));
   });
 
-  // ES6: arrow function
-  it('can check without a schema', function () { Test.check({}); });
+  it('can check without a schema', () => Test.check({}));
 
-  it('can check against a schema', function () {
+  it('can check against a schema', () => {
 
     Test.attachSchema(schemas.coord);
     Test.attachSchema(schemas.coordPlus);
-    Assert.throws(function () { Test.check({}); }, /failed(.*)validation(.*)data\.x/);
+    Assert.throws(() => Test.check({}), /failed(.*)validation(.*)data\.x/);
   });
 
   // ES6: arrow function
-  it('can validate without a schema', function () {
+  it('can validate without a schema', () => {
 
     var errors = Test.validate({});
     Assert.ok(_.isArray(errors));
     Assert.equal(errors.length, 0);
   });
 
-  it('can get errors from a schema validation', function () {
+  it('can get errors from a schema validation', () => {
 
     Test.attachSchema(schemas.coord);
     Test.attachSchema(schemas.coordPlus);
@@ -103,7 +99,7 @@ describe('Schema', function () {
     Assert.equal(errors[2].message, 'is the wrong type');
   });
 
-  it('can get errors from a schema validation non greedily', function () {
+  it('can get errors from a schema validation non greedily', () => {
 
     Test.attachSchema(schemas.coord);
     Test.attachSchema(schemas.coordPlus);
@@ -113,32 +109,32 @@ describe('Schema', function () {
     Assert.equal(error.message, 'is required');
   });
 
-  describe('Document', function () {
+  describe('Document', () => {
 
     var Coord;
 
-    before(function () {
+    before(() => {
 
       Coord = new Mongold.Model('coord', database);
       Coord.attachSchema(schemas.coord);
       Coord.attachSchema(schemas.coordPlus);
     });
 
-    it('checks every document on construction', function () {
+    it('checks every document on construction', () => {
       /* eslint-disable */
       new Coord({ x: 5, y: 2, z: 3 });
-      Assert.throws(function () { new Coord({}); }, /failed(.*)validation(.*)data\.x/);
+      Assert.throws(() => new Coord({}), /failed(.*)validation(.*)data\.x/);
       /* eslint-enable */
     });
 
-    it('can check itself', function () {
+    it('can check itself', () => {
 
       var coord = new Coord({ x: 5, y: 2, z: 3 });
       coord.z = 'hello';
-      Assert.throws(function () { coord.check(); }, /failed(.*)validation(.*)data\.z/);
+      Assert.throws(() => coord.check(), /failed(.*)validation(.*)data\.z/);
     });
 
-    it('can validate itself', function () {
+    it('can validate itself', () => {
 
       var coord = new Coord({ x: 5, y: 2, z: 3 });
       delete coord.x;
