@@ -51,43 +51,6 @@ describe('Model', function () {
     /* eslint-enable */
   });
 
-  describe('Document', function () {
-
-    it('is a constructor function', function () {
-
-      Assert.ok(_.isFunction(chocolate.Test));
-      Assert.ok(_.keys(chocolate.Test.prototype).length === 0);
-
-      // Test the prototype chain
-      // EventEmitter won't work, @see ../lib/model/index.js
-      Assert.ok(chocolate.Test instanceof Mongold.Model);
-      Assert.ok(chocolate.Test instanceof Function);
-      Assert.ok(chocolate.Test instanceof Object);
-    });
-
-    it('is correctly inherited', function () {
-
-      var test = new chocolate.Test({});
-
-      // Test the prototype chain
-      Assert.ok(test instanceof chocolate.Test);
-      Assert.ok(test instanceof Object);
-    });
-
-    it('can have its prototype customized', function () {
-
-      // ES6: template string
-      chocolate.Test.prototype.toString = function () { return '(' + this.x + ', ' + this.y + ')'; };
-
-      var test = new chocolate.Test({ x: 5, y: 3 });
-
-      Assert.ok(!test.hasOwnProperty('toString'));
-      Assert.equal(test.toString(), '(5, 3)');
-
-      delete chocolate.Test.prototype.toString;
-    });
-  });
-
   describe('write operations', function () {
 
     // ES6: arrow function
@@ -142,6 +105,39 @@ describe('Model', function () {
         Assert.equal(documents[1].i, results[1].i);
         Assert.equal(documents[1].j, results[1].j);
         Assert.equal(documents[1].k, results[1].k);
+
+        done();
+      });
+    });
+
+    it('can save a document', function (done) {
+
+      var newHello = 'world';
+      var document = {
+        world: 'hello',
+        hello: 'moon'
+      };
+
+      Async.waterfall([
+        function (next) { chocolate.Test.save(document, next); },
+        function (id, next) {
+
+          Assert.ok(id);
+          document._id = id;
+          document.hello = newHello;
+          chocolate.Test.save(document, next);
+        },
+        function (id, next) {
+
+          vanilla.Test.find({ _id: id }).toArray(next);
+        }
+      ], function (error, results) {
+
+        Assert.ifError(error);
+
+        Assert.equal(results.length, 1);
+        Assert.equal(results[0].hello, newHello);
+        Assert.equal(results[0].world, 'hello');
 
         done();
       });
@@ -409,5 +405,76 @@ describe('Model', function () {
         results.forEach(function (result) { Assert.ok(result.x < 3); });
       }
     ));
+  });
+
+  describe('Document', function () {
+
+    it('is a constructor function', function () {
+
+      Assert.ok(_.isFunction(chocolate.Test));
+      Assert.ok(_.keys(chocolate.Test.prototype).length === 0);
+
+      // Test the prototype chain
+      // EventEmitter won't work, @see ../lib/model/index.js
+      Assert.ok(chocolate.Test instanceof Mongold.Model);
+      Assert.ok(chocolate.Test instanceof Function);
+      Assert.ok(chocolate.Test instanceof Object);
+    });
+
+    it('is correctly inherited', function () {
+
+      var test = new chocolate.Test({});
+
+      // Test the prototype chain
+      Assert.ok(test instanceof chocolate.Test);
+      Assert.ok(test instanceof Object);
+    });
+
+    it('can have its prototype customized', function () {
+
+      // ES6: template string
+      chocolate.Test.prototype.toString = function () { return '(' + this.x + ', ' + this.y + ')'; };
+
+      var test = new chocolate.Test({ x: 5, y: 3 });
+
+      Assert.ok(!test.hasOwnProperty('toString'));
+      Assert.equal(test.toString(), '(5, 3)');
+
+      delete chocolate.Test.prototype.toString;
+    });
+
+    it('can save a document after validation', function (done) {
+
+      chocolate.Test.attachSchema({
+        'type': 'object',
+        'properties': {
+          'x': {
+            'type': 'number'
+          }
+        }
+      });
+
+      var test1 = new chocolate.Test({ x: 5 });
+      var test2 = new chocolate.Test({ x: 2 });
+
+      test2.x = 'hello';
+
+      // ES6: arrow function
+      Assert.throws(function () { test2.save(); }, /failed(.*)validation(.*)data\.x/);
+
+      test1.save(function (error1, id1) {
+
+        Assert.ok(id1);
+        test1.x = 7;
+
+        test1.save(function (error2, id2) {
+
+          Assert.equal(id1, id2);
+          done();
+        });
+      });
+
+      chocolate.Test.detachSchema();
+    });
   });
 });
