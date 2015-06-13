@@ -483,11 +483,10 @@ describe('Model', () => {
         test1.save((error2, id2) => {
 
           Assert.equal(id1, id2);
+          chocolate.Test.detachSchema();
           done();
         });
       });
-
-      chocolate.Test.detachSchema();
     });
   });
 });

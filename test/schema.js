@@ -50,7 +50,7 @@ describe('Schema', () => {
 
     Test.attachSchema(schemas.coord);
     Test.detachSchema();
-    Assert.ok(_.isEqual(Test.schema(), {}));
+    Assert.ok(!Test.schema());
   });
 
   it('can attach and get multiple schemas', () => {
@@ -109,6 +109,8 @@ describe('Schema', () => {
     Assert.equal(error.message, 'is required');
   });
 
+  it('can clean a document');
+
   describe('Document', () => {
 
     var Coord;
@@ -148,5 +150,7 @@ describe('Schema', () => {
       Assert.ok(!_.isArray(error));
       Assert.equal(error.field, 'data.x');
     });
+
+    it('will clean its values on construction');
   });
 });
