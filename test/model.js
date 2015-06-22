@@ -457,7 +457,7 @@ describe('Model', () => {
       delete chocolate.Test.prototype.toString;
     });
 
-    it('can save a document after validation', done => {
+    it('validates on save', () => {
 
       chocolate.Test.attachSchema({
         'type': 'object',
@@ -468,24 +468,57 @@ describe('Model', () => {
         }
       });
 
-      var test1 = new chocolate.Test({ x: 5 });
-      var test2 = new chocolate.Test({ x: 2 });
+      var document = new chocolate.Test({ x: 2 });
 
-      test2.x = 'hello';
+      // Passes validation on construction
+      document.x = 'hello';
 
-      Assert.throws(() => { test2.save(); }, /failed(.*)validation(.*)data\.x/);
+      Assert.throws(() => { document.save(); }, /failed(.*)validation(.*)data\.x/);
+      chocolate.Test.detachSchema();
+    });
 
-      test1.save((error1, id1) => {
+    it('can save a document', done => {
 
-        Assert.ok(id1);
-        test1.x = 7;
+      var document = new chocolate.Test({ x: 5 });
 
-        test1.save((error2, id2) => {
+      var id1;
+      var id2;
 
-          Assert.equal(id1, id2);
-          chocolate.Test.detachSchema();
-          done();
-        });
+      var testDocumentExists = function (documents) {
+
+        Assert.equal(documents.length, 1);
+        Assert.equal(documents[0]._id.toString(), document._id.toString());
+        Assert.equal(documents[0].x, document.x);
+      };
+
+      Async.waterfall([
+        next => document.save(next),
+        (id, next) => {
+
+          id1 = id;
+
+          vanilla.Test.find({ _id: id }).toArray(next);
+        },
+        (documents, next) => {
+
+          testDocumentExists(documents);
+
+          document.x = 7;
+          document.save(next);
+        },
+        (id, next) => {
+
+          id2 = id;
+
+          vanilla.Test.find({ _id: id }).toArray(next);
+        }
+      ], (error, documents) => {
+
+        Assert.ifError(error);
+
+        testDocumentExists(documents);
+        Assert.equal(id1, id2);
+        done();
       });
     });
   });
