@@ -9,6 +9,7 @@ describe('Schema', () => {
     coord: {
       'type': 'object',
       'required': ['x'],
+      'additionalProperties': false,
       'properties': {
         'x': { 'type': 'number' },
         'y': { 'type': 'number' }
@@ -109,7 +110,16 @@ describe('Schema', () => {
     Assert.equal(error.message, 'is required');
   });
 
-  it('can clean a document');
+  it('can clean a document', () => {
+
+    var document = { x: 1, y: 2, z: 5, a: 1, b: { c: 'd' } };
+    var cleansed = { x: document.x, y: document.y, z: document.z };
+
+    Test.attachSchema(schemas.coord);
+    Test.attachSchema(schemas.coordPlus);
+    var cleaned = Test.clean(document);
+    Assert.equal(JSON.stringify(document), JSON.stringify(cleansed));
+  });
 
   describe('Document', () => {
 
@@ -151,6 +161,13 @@ describe('Schema', () => {
       Assert.equal(error.field, 'data.x');
     });
 
-    it('will clean its values on construction');
+    it('will clean its values on construction', function () {
+
+      var document = { x: 1, y: 2, z: 5, a: 1, b: { c: 'd' } };
+      var cleansed = { x: document.x, y: document.y, z: document.z };
+
+      var coord = new Coord(document);
+      Assert.equal(JSON.stringify(coord), JSON.stringify(cleansed));
+    });
   });
 });
