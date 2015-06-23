@@ -4,8 +4,7 @@ import * as Async from 'async';
 import * as Mongold from '../lib';
 import {MongoClient} from 'mongodb';
 
-var internals = {};
-internals.url = 'mongodb://localhost:27017/mongold-test';
+const URL = 'mongodb://localhost:27017/mongold-test';
 
 describe('Model', () => {
 
@@ -16,7 +15,7 @@ describe('Model', () => {
 
   before(done => {
 
-    MongoClient.connect(internals.url, (error, db) => {
+    MongoClient.connect(URL, (error, db) => {
 
       Assert.ifError(error);
       vanilla.db = db;
@@ -27,12 +26,11 @@ describe('Model', () => {
 
   before(done => {
 
-    chocolate.database = new Mongold.Database(internals.url);
+    chocolate.database = new Mongold.Database(URL);
     chocolate.Test = new Mongold.Model(collectionName, chocolate.database);
     chocolate.database.on('ready', () => done());
   });
 
-  // ES6: arrow functions
   after(done => vanilla.Test.remove({}, done));
   after(() => vanilla.db.close());
   after(() => chocolate.database.disconnect());
@@ -46,7 +44,7 @@ describe('Model', () => {
 
   it('can use the default database', done => {
     /* eslint-disable */
-    Mongold.connect(internals.url);
+    Mongold.connect(URL);
     Mongold.database.on('close', done);
     new Mongold.Model('model');
     Mongold.disconnect();
@@ -285,7 +283,7 @@ describe('Model', () => {
       { x: 5, y: 1 }
     ];
 
-    before(done => vanilla.Test.insert(documents, done));
+    before(done => vanilla.Test.insert(_.cloneDeep(documents), done));
 
     var readTest = (find, doAssert) => {
 
@@ -314,6 +312,16 @@ describe('Model', () => {
 
         Assert.equal(results.length, documents.length);
         documents.forEach((document, index) => Assert.equal(document.x, results[index].x));
+      }
+    ));
+
+    it('can find one document', readTest(
+      next => chocolate.Test.findOne({ x: 2 }, next),
+      document => {
+
+        Assert.ok(!_.isArray(document));
+        delete document._id;
+        Assert.equal(JSON.stringify(document), JSON.stringify(documents[1]));
       }
     ));
 
