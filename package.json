@@ -1,6 +1,6 @@
 {
   "name": "mongold",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "main": "lib/index.js",
   "scripts": {
     "test": "node_modules/.bin/mocha -r node_modules/babel/register",

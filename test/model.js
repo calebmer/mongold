@@ -325,6 +325,15 @@ describe('Model', () => {
       }
     ));
 
+    it('returns a constructed object', readTest(
+      next => chocolate.Test.find(next),
+      results => {
+
+        Assert.equal(results.length, documents.length);
+        results.forEach(document => Assert.ok(document instanceof chocolate.Test));
+      }
+    ));
+
     it('can find documents with a selector', readTest(
       next => chocolate.Test.find({ x: { $gt: 3 } }, next),
       results => {

@@ -48,7 +48,15 @@ export function find() {
       callback(null, cursor);
     }
 
-    cursor.toArray(callback);
+    cursor.toArray((error, documents) => {
+
+      if (error) { return callback(error); }
+
+      // Use constructor on documents
+      documents = documents.map(document => new this(document, false));
+
+      callback(null, documents);
+    });
   });
 }
 

@@ -15,7 +15,7 @@ function Model(name, database) {
 
   // We actually want to return a constructor function
   // So let's set it up and have it extend `Document`
-  var constructor = function (document) {
+  var constructor = function (document, shouldValidate = true) {
 
     var self = this;
 
@@ -25,9 +25,12 @@ function Model(name, database) {
     }
 
     // Extend using the document
-    _.extend(self, constructor.clean(document || {}));
+    _.extend(self, document || {});
 
-    self.check();
+    if (shouldValidate) {
+      self.clean();
+      self.check();
+    }
   };
 
   // Force the right prototype onto constructor
@@ -51,6 +54,7 @@ function Model(name, database) {
   var bind = (method, context, args) => constructor[method].apply(constructor, [context].concat(_.toArray(args)));
 
   constructor.prototype = Object.create({
+    clean: function () { return bind('clean', this, arguments); },
     check: function () { return bind('check', this, arguments); },
     validate: function () { return bind('validate', this, arguments); },
     save: function (callback) {
