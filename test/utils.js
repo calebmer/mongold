@@ -1,6 +1,6 @@
-var Assert = require('assert');
-var EventEmitter = require('events').EventEmitter;
-var Utils = require('../lib/utils');
+import Assert from 'assert';
+import {EventEmitter} from 'events';
+import * as Utils from '../src/utils';
 
 describe('Utils', () => {
 

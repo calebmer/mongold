@@ -2,12 +2,12 @@ import _ from 'lodash';
 import {whenReady} from '../utils';
 import Assert from 'assert';
 import {EventEmitter} from 'events';
-import {database as defaultDatabase} from '../index';
+import Mongold from '../index';
 import Database from '../database';
 
 function Model(name, database) {
   // Use the default database if none was passed
-  database = database || defaultDatabase;
+  database = database || Mongold.database;
 
   if (!database || !(database instanceof Database)) {
     throw new Error('Model requires a database');

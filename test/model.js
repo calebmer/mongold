@@ -1,7 +1,7 @@
 import * as _ from 'lodash';
 import * as Assert from 'assert';
 import * as Async from 'async';
-import * as Mongold from '../lib';
+import Mongold, {Database, Model, Id} from '../src';
 import {MongoClient} from 'mongodb';
 
 const URL = 'mongodb://localhost:27017/mongold-test';
@@ -26,8 +26,8 @@ describe('Model', () => {
 
   before(done => {
 
-    chocolate.database = new Mongold.Database(URL);
-    chocolate.Test = new Mongold.Model(collectionName, chocolate.database);
+    chocolate.database = new Database(URL);
+    chocolate.Test = new Model(collectionName, chocolate.database);
     chocolate.database.on('ready', () => done());
   });
 
@@ -37,8 +37,8 @@ describe('Model', () => {
 
   it('requires a database', () => {
     /* eslint-disable */
-    Assert.throws(() => new Mongold.Model('model', undefined), /require(.*)database/i);
-    new Mongold.Model('model', chocolate.database);
+    Assert.throws(() => new Model('model', undefined), /require(.*)database/i);
+    new Model('model', chocolate.database);
     /* eslint-enable */
   });
 
@@ -46,7 +46,7 @@ describe('Model', () => {
     /* eslint-disable */
     Mongold.connect(URL);
     Mongold.database.on('close', done);
-    new Mongold.Model('model');
+    new Model('model');
     Mongold.disconnect();
     /* eslint-enable */
   });
@@ -116,7 +116,7 @@ describe('Model', () => {
         (ids, next) => {
 
           Assert.equal(ids.length, 2);
-          Assert.ok(ids[0] instanceof Mongold.Id);
+          Assert.ok(ids[0] instanceof Id);
 
           vanilla.Test.find({ _id: { $in: ids } }).toArray(next);
         }
@@ -439,7 +439,7 @@ describe('Model', () => {
 
       // Test the prototype chain
       // EventEmitter won't work, @see ../lib/model/index.js
-      Assert.ok(chocolate.Test instanceof Mongold.Model);
+      Assert.ok(chocolate.Test instanceof Model);
       Assert.ok(chocolate.Test instanceof Function);
       Assert.ok(chocolate.Test instanceof Object);
     });

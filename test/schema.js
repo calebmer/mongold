@@ -1,7 +1,8 @@
-var _ = require('lodash');
-var Assert = require('assert');
-var Mongold = require('../lib');
-var url = 'mongodb://localhost:27017/mongold-test';
+import _ from 'lodash';
+import Assert from 'assert';
+import {Database, Model} from '../src';
+
+const URL = 'mongodb://localhost:27017/mongold-test';
 
 describe('Schema', () => {
 
@@ -29,8 +30,8 @@ describe('Schema', () => {
 
   before(done => {
 
-    database = new Mongold.Database(url);
-    Test = new Mongold.Model('test', database);
+    database = new Database(URL);
+    Test = new Model('test', database);
     database.on('ready', () => done());
   });
 
@@ -118,7 +119,7 @@ describe('Schema', () => {
     Test.attachSchema(schemas.coord);
     Test.attachSchema(schemas.coordPlus);
     var cleaned = Test.clean(document);
-    Assert.equal(JSON.stringify(document), JSON.stringify(cleansed));
+    Assert.equal(JSON.stringify(cleaned), JSON.stringify(cleansed));
   });
 
   describe('Document', () => {
@@ -127,7 +128,7 @@ describe('Schema', () => {
 
     before(() => {
 
-      Coord = new Mongold.Model('coord', database);
+      Coord = new Model('coord', database);
       Coord.attachSchema(schemas.coord);
       Coord.attachSchema(schemas.coordPlus);
     });

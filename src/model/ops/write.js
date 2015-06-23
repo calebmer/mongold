@@ -1,32 +1,19 @@
-'use strict';
-
-Object.defineProperty(exports, '__esModule', {
-  value: true
-});
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
-var _lodash = require('lodash');
-
-var _lodash2 = _interopRequireDefault(_lodash);
-
-var _assert = require('assert');
-
-var _assert2 = _interopRequireDefault(_assert);
+import _ from 'lodash';
+import Assert from 'assert';
 
 var internals = {};
 
-internals.writeAction = function (action) {
+internals.writeAction = action => {
 
   return function () {
 
-    var args = _lodash2['default'].toArray(arguments);
+    var args = _.toArray(arguments);
     var collection = this._collection;
-    var callback = _assert2['default'].ifError;
+    var callback = Assert.ifError;
     var hasCallback = false;
     var formatResponse;
 
-    if (_lodash2['default'].isFunction(_lodash2['default'].last(args))) {
+    if (_.isFunction(_.last(args))) {
       callback = args.pop();
       hasCallback = true;
     }
@@ -39,7 +26,7 @@ internals.writeAction = function (action) {
     if (action === 'insert' || action === 'save') {
       document = args.shift();
 
-      if (!document || !_lodash2['default'].isObject(document)) {
+      if (!document || !_.isObject(document)) {
         return callback(new Error('A document object is required'));
       }
 
@@ -57,7 +44,7 @@ internals.writeAction = function (action) {
     if (action === 'update' || action === 'remove') {
       selector = args.shift();
 
-      if (!selector || !_lodash2['default'].isObject(selector)) {
+      if (!selector || !_.isObject(selector)) {
         if (action === 'update') {
           return callback(new Error('A selector object is required'));
         } else {
@@ -68,7 +55,7 @@ internals.writeAction = function (action) {
       if (action === 'update') {
         modifier = args.shift();
 
-        if (!modifier || !_lodash2['default'].isObject(modifier)) {
+        if (!modifier || !_.isObject(modifier)) {
           return callback(new Error('A modifier object is required'));
         }
 
@@ -78,42 +65,38 @@ internals.writeAction = function (action) {
 
     options = args.shift() || {};
 
-    _lodash2['default'].defaults(options, {
+    _.defaults(options, {
       writeConcern: {
         w: hasCallback ? 1 : 0
       }
     });
 
-    callback = _lodash2['default'].wrap(callback, function (next, error, response) {
+    callback = _.wrap(callback, (next, error, response) => {
 
-      if (error) {
-        return next(error);
-      }
+      if (error) { return next(error); }
 
       if (response.result.ok !== 1) {
-        return next(new Error('Database \'' + action + '\' operation failed'));
+        return next(new Error(`Database '${action}' operation failed`));
       }
 
       next(null, formatResponse(response));
     });
 
-    this.on('ready', function () {
+    this.on('ready', () => {
 
       if (action === 'insert' || action === 'save') {
         // Return the id (or array of ids) as the response
-        formatResponse = function (response) {
+        formatResponse = response => {
           // If the document has an id and there are no ops documents, just return the id
           if (document._id && (!response.ops || response.ops.length === 0)) {
             return document._id;
           }
 
-          if (!_lodash2['default'].isArray(document)) {
+          if (!_.isArray(document)) {
             return response.ops[0]._id;
           }
 
-          return _lodash2['default'].map(response.ops, function (op) {
-            return op._id;
-          });
+          return _.map(response.ops, op => op._id);
         };
 
         if (action === 'save') {
@@ -125,28 +108,22 @@ internals.writeAction = function (action) {
 
       if (action === 'update' || action === 'remove') {
         // ES6: arrow function
-        formatResponse = function (response) {
-          return response.result.n;
-        };
+        formatResponse = response => response.result.n;
 
         // If this is the remove action, fire and don't continue
         if (action === 'remove') {
-          _lodash2['default'].defaults(options, { justOne: selector._id ? true : false });
+          _.defaults(options, { justOne: selector._id ? true : false });
           return collection.remove(selector, callback);
         }
 
-        _lodash2['default'].defaults(options, { multi: selector._id ? false : true });
+        _.defaults(options, { multi: selector._id ? false : true });
         return collection.update(selector, modifier, options, callback);
       }
     });
   };
 };
 
-var insert = internals.writeAction('insert');
-exports.insert = insert;
-var save = internals.writeAction('save');
-exports.save = save;
-var update = internals.writeAction('update');
-exports.update = update;
-var remove = internals.writeAction('remove');
-exports.remove = remove;
+export var insert = internals.writeAction('insert');
+export var save = internals.writeAction('save');
+export var update = internals.writeAction('update');
+export var remove = internals.writeAction('remove');
