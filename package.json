@@ -1,6 +1,21 @@
 {
   "name": "mongold",
   "version": "0.0.2",
+  "description": "A MongoDB ORM for the Linked Data age—WIP",
+  "author": "Caleb Meredith <calebmeredith8@gmail.com>",
+  "keywords": [
+    "mongodb",
+    "json",
+    "jsonld",
+    "json schema",
+    "linked data",
+    "orm"
+  ],
+  "liscense": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/calebmer/mongold.git"
+  },
   "main": "lib/index.js",
   "scripts": {
     "test": "node_modules/.bin/mocha -r node_modules/babel/register",
