@@ -17,19 +17,17 @@ function Model(name, database) {
   // So let's set it up and have it extend `Document`
   var constructor = function (document, shouldValidate = true) {
 
-    var self = this;
-
     // If not using `new` syntax, force `new`
-    if (!(self instanceof constructor)) {
+    if (!(this instanceof constructor)) {
       return new constructor(document);
     }
 
     // Extend using the document
-    _.extend(self, document || {});
+    _.extend(this, document || {});
 
     if (shouldValidate) {
-      self.clean();
-      self.check();
+      this.clean();
+      this.check();
     }
   };
 
@@ -40,7 +38,8 @@ function Model(name, database) {
   EventEmitter.apply(constructor);
   whenReady(constructor);
 
-  constructor._name = name;
+  // Define the uneditable name value
+  Object.defineProperty(constructor, '_name', { value: name });
 
   // Use the default mongo database if undefined
   constructor._database = database;

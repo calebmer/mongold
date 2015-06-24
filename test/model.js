@@ -5,10 +5,9 @@ import Mongold, {Database, Model, Id} from '../src';
 import {MongoClient} from 'mongodb';
 
 const URL = 'mongodb://localhost:27017/mongold-test';
+const COLLECTION_NAME = 'misc';
 
 describe('Model', () => {
-
-  var collectionName = 'misc';
 
   var vanilla = {};
   var chocolate = {};
@@ -19,7 +18,7 @@ describe('Model', () => {
 
       Assert.ifError(error);
       vanilla.db = db;
-      vanilla.Test = db.collection(collectionName);
+      vanilla.Test = db.collection(COLLECTION_NAME);
       done();
     });
   });
@@ -27,7 +26,7 @@ describe('Model', () => {
   before(done => {
 
     chocolate.database = new Database(URL);
-    chocolate.Test = new Model(collectionName, chocolate.database);
+    chocolate.Test = new Model(COLLECTION_NAME, chocolate.database);
     chocolate.database.on('ready', () => done());
   });
 

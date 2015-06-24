@@ -13,7 +13,7 @@ var Mongold = {
   }
 };
 
+export default Mongold;
+
 export {Database, Model};
 export {ObjectId as Id} from 'mongodb';
-
-export default Mongold;
