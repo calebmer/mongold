@@ -22,6 +22,27 @@ describe('Schema', () => {
       'properties': {
         'z': { 'type': 'number' }
       }
+    },
+    deep: {
+      'type': 'object',
+      'properties': {
+        'a': {
+          'type': 'object',
+          'properties': {
+            'b': {
+              'type': 'object',
+              'properties': {
+                'c': {
+                  'type': 'object',
+                  'properties': {
+                    'd': { 'type': 'string' }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     }
   };
 
@@ -39,6 +60,8 @@ describe('Schema', () => {
 
   beforeEach(() => Test.detachSchema());
   beforeEach(done => Test.remove(done));
+
+  afterEach(() => Test.detachSchema());
 
   it('can attach a schema', () => Test.attachSchema(schemas.coord));
 
@@ -119,6 +142,28 @@ describe('Schema', () => {
     Test.attachSchema(schemas.coordPlus);
     var cleaned = Test.clean(document);
     Assert.equal(JSON.stringify(cleaned), JSON.stringify(cleansed));
+  });
+
+  it('can get schema pieces', () => {
+
+    Test.attachSchema(schemas.deep);
+    Assert.equal(JSON.stringify(Test.schema('a')), JSON.stringify(schemas.deep.properties.a));
+    Assert.equal(JSON.stringify(Test.schema('a.b.c.d')), JSON.stringify(schemas.deep.properties.a.properties.b.properties.c.properties.d));
+  });
+
+  it('can get schema keys', () => {
+
+    Test.attachSchema(schemas.coord);
+    Test.attachSchema(schemas.coordPlus);
+    Test.attachSchema(schemas.deep);
+    Assert.equal(JSON.stringify([
+      'x', 'y', 'z',
+      'a', 'a.b', 'a.b.c',
+      'a.b.c.d'
+    ]), JSON.stringify(Test.schemaKeys()));
+    Assert.equal(JSON.stringify([
+      'a.b.c', 'a.b.c.d'
+    ]), JSON.stringify(Test.schemaKeys('a.b')));
   });
 
   describe('Document', () => {

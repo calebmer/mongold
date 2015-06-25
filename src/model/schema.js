@@ -133,7 +133,7 @@ export function attachSchema(attachment) {
   internals.updateState.call(this);
 
   if (!this._schema.object) {
-    this._schema.object = attachment;
+    this._schema.object = _.cloneDeep(attachment);
     internals.recompileValidators.call(this);
     return;
   }
@@ -151,4 +151,43 @@ export function detachSchema() {
   internals.recompileValidators.call(this, true);
 }
 
-export function schema() { return this._schema.object; }
+export function schema(path) {
+
+  if (path) {
+    var schemaPartial = this._schema.object;
+
+    path.split('.').forEach(segment => {
+
+      if (schemaPartial && schemaPartial.type === 'object') {
+        schemaPartial = schemaPartial.properties[segment];
+      } else {
+        schemaPartial = undefined;
+      }
+    });
+
+    return schemaPartial;
+  }
+
+  return this._schema.object;
+}
+
+export function schemaKeys(path) {
+
+  var keys = [];
+  function scanSchema(prefix, schemaPartial) {
+
+    if (prefix) { prefix += '.'; }
+
+    if (schemaPartial && schemaPartial.type === 'object' && schemaPartial.properties) {
+      _.each(schemaPartial.properties, (property, key) => {
+
+        key = prefix + key;
+        keys.push(key);
+        scanSchema(key, property);
+      });
+    }
+  }
+
+  scanSchema(path || '', this.schema(path));
+  return keys;
+}
