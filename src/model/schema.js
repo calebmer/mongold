@@ -1,4 +1,5 @@
 import _ from 'lodash';
+import Async from 'async';
 import Validator from 'is-my-json-valid';
 import * as Debug from '../debug';
 
@@ -18,48 +19,101 @@ internals.recompileValidators = function (reset) {
     return;
   }
 
-  this._schema.validate = Validator(this._schema.object);
-  this._schema.validateGreedily = Validator(this._schema.object, { greedy: true });
+  this._schema.validate = Validator(this._schema.object, { verbose: true });
+  this._schema.validateGreedily = Validator(this._schema.object, { verbose: true, greedy: true });
   this._schema.filter = Validator.filter(this._schema.object, { additionalProperties: false });
 };
 
-export function validate(document, greedy) {
+export function validate(document, options = {}, callback) {
 
   internals.updateState.call(this);
 
-  if (greedy === undefined) {
-    greedy = true;
+  if (_.isFunction(options)) {
+    callback = options;
+    options = {};
   }
+
+  _.defaults(options, {
+    greedy: true
+  });
 
   var validateSingle = this._schema.validate;
   var validateGreedily = this._schema.validateGreedily;
-  var errors;
 
-  if (greedy) {
-    if (!validateGreedily) { return []; }
+  var errors = (() => {
 
-    validateGreedily(document);
-    errors = validateGreedily.errors;
-    return errors ? errors : [];
-  } else {
-    if (!validateSingle) { return null; }
+    if (options.greedy) {
+      if (!validateGreedily) { return []; }
 
-    validateSingle(document);
-    errors = validateSingle.errors;
-    return errors && errors.length > 0 ? errors[0] : null;
+      validateGreedily(document);
+      return validateGreedily.errors ? validateGreedily.errors : [];
+    } else {
+      if (!validateSingle) { return []; }
+
+      validateSingle(document);
+      return validateSingle.errors ? validateSingle.errors : [];
+    }
+  })();
+
+  function reportErrors() {
+
+    if (options.greedy) {
+      return errors;
+    } else {
+      return errors[0];
+    }
   }
-};
+
+  // If we have one error already, return it
+  if (!options.greedy && errors.length > 0) {
+    let error = reportErrors();
+    if (callback) { callback(null, false, error); }
+    return error;
+  }
+  // If there is a callback we are executing asynchronously
+  if (callback) {
+    Async.forEachOf(this._indexes, ({ unique }, key, next) => {
+
+      if (!unique) { return next(); }
+
+      var value = _.get(document, key);
+      var selector = {};
+      _.set(selector, key, value);
+      this.findOne(selector, (error, notUnique) => {
+
+        if (error) { return next(error); }
+        if (notUnique) {
+          errors.push({
+            field: `data.${key}`,
+            message: 'is not unique'
+          });
+        }
+
+        return next();
+      });
+    }, error => {
+
+      if (error) { return callback(error, false); }
+      var validationErrors = reportErrors();
+      var ok = _.isArray(validationErrors) ? validationErrors.length === 0 : !!validationErrors;
+
+      callback(null, ok, validationErrors);
+    });
+  }
+
+  return reportErrors();
+}
 
 export function check(document) {
 
-  var error = this.validate(document, false);
+  var error = this.validate(document, { greedy: false });
 
   if (error) {
     var throwError = new Error(`Document failed validation at field '${error.field}'`);
     throwError.field = error.field;
     throw throwError;
   }
-};
+}
 
 export function clean(document) {
 
@@ -74,7 +128,7 @@ export function clean(document) {
   }
 
   return document;
-};
+}
 
 export function attachSchema(attachment) {
 
@@ -90,13 +144,13 @@ export function attachSchema(attachment) {
   _.merge(this._schema.object, attachment, (a, b) => _.isArray(a) ? _.unique(a.concat(b)) : undefined);
 
   internals.recompileValidators.call(this);
-};
+}
 
 export function detachSchema() {
 
   internals.updateState.call(this);
   delete this._schema.object;
   internals.recompileValidators.call(this, true);
-};
+}
 
-export function schema() { return this._schema.object; };
+export function schema() { return this._schema.object; }

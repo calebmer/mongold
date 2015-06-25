@@ -78,7 +78,6 @@ describe('Schema', () => {
     Assert.throws(() => Test.check({}), /failed(.*)validation(.*)data\.x/);
   });
 
-  // ES6: arrow function
   it('can validate without a schema', () => {
 
     var errors = Test.validate({});
@@ -105,7 +104,7 @@ describe('Schema', () => {
 
     Test.attachSchema(schemas.coord);
     Test.attachSchema(schemas.coordPlus);
-    var error = Test.validate({ y: 'hello' }, false);
+    var error = Test.validate({ y: 'hello' }, { greedy: false });
     Assert.ok(!_.isArray(error));
     Assert.equal(error.field, 'data.x');
     Assert.equal(error.message, 'is required');

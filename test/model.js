@@ -34,6 +34,12 @@ describe('Model', () => {
   after(() => vanilla.db.close());
   after(() => chocolate.database.disconnect());
 
+  afterEach(done => {
+
+    chocolate.Test.detachSchema();
+    chocolate.Test.dropIndexes(done);
+  });
+
   it('requires a database', () => {
     /* eslint-disable */
     Assert.throws(() => new Model('model', undefined), /require(.*)database/i);
@@ -71,8 +77,48 @@ describe('Model', () => {
       Assert.equal(result['d_1_e_-1'][1][0], 'e');
       Assert.equal(result['d_1_e_-1'][1][1], -1);
 
-      vanilla.Test.dropAllIndexes(done);
+      done();
     });
+  });
+
+  it('can validate asynchronously', done => {
+
+    chocolate.Test.index('a');
+    chocolate.Test.index('c', { unique: false });
+    chocolate.Test.attachSchema({
+      'type': 'object',
+      'required': ['b']
+    });
+
+    var badDocument = { a: 1, c: 3 };
+    var document = { a: 1, b: 2, c: 3 };
+
+    Async.waterfall([
+      next => chocolate.Test.validate(document, next),
+      (ok, validationErrors, next) => { Assert.equal(ok, true); next(); },
+      next => vanilla.Test.insert(document, next),
+      (id, next) => chocolate.Test.validate(badDocument, next),
+      (ok, validationErrors, next) => {
+
+        Assert.equal(ok, false);
+        Assert.ok(_.isArray(validationErrors));
+        Assert.equal(validationErrors.length, 2);
+        Assert.equal(validationErrors[0].field, 'data.b');
+        Assert.equal(validationErrors[0].message, 'is required');
+        Assert.equal(validationErrors[1].field, 'data.a');
+        Assert.equal(validationErrors[1].message, 'is not unique');
+        next();
+      },
+      next => chocolate.Test.validate(badDocument, { greedy: false }, next),
+      (ok, validationError, next) => {
+
+        Assert.equal(ok, false);
+        Assert.ok(!_.isArray(validationError));
+        Assert.equal(validationError.field, 'data.b');
+        Assert.equal(validationError.message, 'is required');
+        next();
+      }
+    ], done);
   });
 
   describe('write operations', () => {
