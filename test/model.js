@@ -95,12 +95,16 @@ describe('Model', () => {
 
     Async.waterfall([
       next => chocolate.Test.validate(document, next),
-      (ok, validationErrors, next) => { Assert.equal(ok, true); next(); },
+      (validationErrors, next) => {
+
+        Assert.ok(_.isArray(validationErrors));
+        Assert.equal(validationErrors.length, 0);
+        next();
+      },
       next => vanilla.Test.insert(document, next),
       (id, next) => chocolate.Test.validate(badDocument, next),
-      (ok, validationErrors, next) => {
+      (validationErrors, next) => {
 
-        Assert.equal(ok, false);
         Assert.ok(_.isArray(validationErrors));
         Assert.equal(validationErrors.length, 2);
         Assert.equal(validationErrors[0].field, 'data.b');
@@ -110,9 +114,8 @@ describe('Model', () => {
         next();
       },
       next => chocolate.Test.validate(badDocument, { greedy: false }, next),
-      (ok, validationError, next) => {
+      (validationError, next) => {
 
-        Assert.equal(ok, false);
         Assert.ok(!_.isArray(validationError));
         Assert.equal(validationError.field, 'data.b');
         Assert.equal(validationError.message, 'is required');

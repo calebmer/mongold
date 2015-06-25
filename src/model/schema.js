@@ -67,7 +67,7 @@ export function validate(document, options = {}, callback) {
   // If we have one error already, return it
   if (!options.greedy && errors.length > 0) {
     let error = reportErrors();
-    if (callback) { callback(null, false, error); }
+    if (callback) { callback(null, error); }
     return error;
   }
   // If there is a callback we are executing asynchronously
@@ -94,10 +94,7 @@ export function validate(document, options = {}, callback) {
     }, error => {
 
       if (error) { return callback(error, false); }
-      var validationErrors = reportErrors();
-      var ok = _.isArray(validationErrors) ? validationErrors.length === 0 : !!validationErrors;
-
-      callback(null, ok, validationErrors);
+      callback(null, reportErrors());
     });
   }
 
