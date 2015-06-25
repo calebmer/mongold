@@ -85,7 +85,8 @@ export function validate(document, options = {}, callback) {
         if (notUnique) {
           errors.push({
             field: `data.${key}`,
-            message: 'is not unique'
+            message: 'is not unique',
+            value
           });
         }
 
