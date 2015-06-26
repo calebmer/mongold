@@ -57,6 +57,7 @@ function Model(name, database) {
     clean: function () { return bind('clean', this, arguments); },
     check: function () { return bind('check', this, arguments); },
     validate: function () { return bind('validate', this, arguments); },
+    extend: function () { return bind('extend', this, arguments); },
     format: function () { return bind('format', this, arguments); },
     save: function (callback) {
 
@@ -79,6 +80,7 @@ import * as Schema from './schema';
 import * as Ops from './ops';
 import * as Indexes from './indexes';
 import * as Context from './context';
+import * as Transform from './transform';
 
 // Establish the correct prototype chain
 // Function > EventEmitter > Model
@@ -91,7 +93,7 @@ Model.prototype = (() => {
   _.extend(prototype, EventEmitter.prototype);
 
   prototype = Object.create(prototype);
-  _.extend(prototype, Schema, Ops, Indexes, Context);
+  _.extend(prototype, Schema, Ops, Indexes, Context, Transform);
 
   return prototype;
 })();
