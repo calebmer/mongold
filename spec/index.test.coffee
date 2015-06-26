@@ -4,9 +4,9 @@ describe 'index methods', ->
 
 
   it 'can add an index', (done) ->
-    Test.b.index('a');
-    Test.b.index(['b', 'c']);
-    Test.b.index({ d: 1, e: -1 });
+    Test.b.index 'a'
+    Test.b.index ['b', 'c']
+    Test.b.index d: 1, e: -1
     Test.a.indexInformation (e, result) ->
       done e if e?
       result.a_1[0][0].should.be.exactly 'a'
