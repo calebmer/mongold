@@ -216,6 +216,9 @@ describe('Model', () => {
       });
     });
 
+    it('validates on insert and save operations');
+    it('validation on save and insert operations can be disabled');
+
     it('can update a document', done => {
 
       var searchA = 8;
