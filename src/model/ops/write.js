@@ -1,5 +1,6 @@
 import _ from 'lodash';
 import Assert from 'assert';
+import {Id} from '../../index';
 
 var internals = {};
 
@@ -35,11 +36,11 @@ internals.writeAction = action => {
       selector = args.shift();
 
       if (!selector || !_.isObject(selector)) {
-        if (action === 'update') {
-          return callback(new Error('A selector object is required'));
-        } else {
-          selector = {};
-        }
+        return callback(new Error('A selector object is required'));
+      }
+
+      if (selector._id && !(selector._id instanceof Id)) {
+        selector._id = new Id(selector._id);
       }
 
       if (action === 'update') {

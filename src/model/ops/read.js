@@ -1,5 +1,6 @@
 import _ from 'lodash';
 import Assert from 'assert';
+import {Id} from '../../index';
 import {getCallback} from '../../utils';
 
 var internals = {};
@@ -32,6 +33,10 @@ export function find() {
 
   var selector = args.shift() || {};
   var options = args.shift() || {};
+
+  if (selector._id && !(selector._id instanceof Id)) {
+    selector._id = new Id(selector._id);
+  }
 
   internals.formatOptions(options);
 
