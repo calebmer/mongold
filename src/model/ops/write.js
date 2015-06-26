@@ -33,11 +33,11 @@ internals.writeAction = action => {
     }
 
     if (action === 'update' || action === 'remove') {
-      selector = args.shift();
+      selector = args.shift() || {};
 
-      if (!selector || !_.isObject(selector)) {
-        return callback(new Error('A selector object is required'));
-      }
+      // if (!selector || !_.isObject(selector)) {
+      //  return callback(new Error('A selector object is required'));
+      // }
 
       if (selector._id && !(selector._id instanceof Id)) {
         selector._id = new Id(selector._id);
