@@ -141,14 +141,16 @@ export function attachSchema(attachment) {
   internals.updateState.call(this);
 
   if (!this._schema.object) {
-    this._schema.object = _.cloneDeep(attachment);
-    internals.recompileValidators.call(this);
-    return;
+    this._schema.object = {
+      'type': 'object',
+      'properties': {
+        '_id': {}
+      }
+    };
   }
 
   // Merge the schemas, if we are merging arrays concatenate them and make sure values are unique
   _.merge(this._schema.object, attachment, (a, b) => _.isArray(a) ? _.unique(a.concat(b)) : undefined);
-
   internals.recompileValidators.call(this);
 }
 
@@ -190,6 +192,8 @@ export function schemaKeys(path) {
       _.each(schemaPartial.properties, (property, key) => {
 
         key = prefix + key;
+        // If this is an id, we don't need to report it
+        if (key === '_id') { return; }
         keys.push(key);
         scanSchema(key, property);
       });

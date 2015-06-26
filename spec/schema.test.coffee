@@ -37,7 +37,7 @@ describe 'schema methods', ->
 
   it 'can get a schema', ->
     Test.b.attachSchema schemas.coord
-    Test.b.schema().should.eql schemas.coord
+    Test.b.schema().should.containEql schemas.coord
 
 
   it 'will merge multiple schemas together', ->
