@@ -25,9 +25,6 @@ export function format(document, access = 0) {
   var origDocument = _.clone(document);
   var id = origDocument._id;
 
-  this.clean(origDocument);
-  this.check(origDocument);
-
   var formattedDocument = {};
 
   this.schemaKeys().forEach(key => {
