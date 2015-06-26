@@ -1,6 +1,6 @@
 {
   "name": "mongold",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "A MongoDB ORM for the Linked Data age—WIP",
   "author": "Caleb Meredith <calebmeredith8@gmail.com>",
   "keywords": [
