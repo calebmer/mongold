@@ -1,0 +1,69 @@
+#!/usr/bin/env node
+
+// Load code
+require('babel/register');
+var Mongold = require('../src');
+
+// Now we can polute the global scope
+require('coffee-script/register');
+require('should');
+
+var Path = require('path');
+var Assert = require('assert');
+var Glob = require('glob');
+var Async = require('async');
+var Mocha = require('mocha');
+var MongoClient = require('mongodb').MongoClient;
+
+var URL = 'mongodb://localhost:27017/mongold-test';
+var mocha = new Mocha({
+  ui: 'bdd',
+  reporter: 'spec'
+});
+
+global.Mongold = Mongold.default;
+global.Database = Mongold.Database;
+global.Model = Mongold.Model;
+
+global.Mongold.connect(URL);
+
+global.Test = {
+  b: new global.Model('test')
+};
+
+var exitCode = 0;
+
+Async.series([
+  function (done) {
+
+    MongoClient.connect(URL, function (error, db) {
+
+      global.Test.a = db.collection('test');
+      done();
+    });
+  },
+  function (done) {
+
+    Glob(Path.join(__dirname, '..', 'spec/*.test.*'), function (error, files) {
+
+      if (error) { return done(error); }
+      files.forEach(Mocha.prototype.addFile.bind(mocha));
+      done();
+    });
+  },
+  function (done) {
+
+    mocha.run(function (failures) {
+
+      exitCode = failures;
+      done();
+    });
+  },
+  function (done) { global.Test.a.remove({}, done); },
+  function (done) {
+    /* eslint-disable */
+    process.exit(exitCode);
+    /* eslint-enable */
+    done();
+  }
+], Assert.ifError);
