@@ -2,6 +2,8 @@ import Database from './database';
 import Model from './model';
 
 var Mongold = {
+  _host: {},
+  host: function (url) { this._host = url; },
   connect: function (url) {
     // Set the default database to a new instance
     this.database = new Database(url);

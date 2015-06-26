@@ -1,4 +1,5 @@
 import _ from 'lodash';
+import Mongold from '../index';
 
 export function attachContext(attachment) {
 
@@ -27,6 +28,7 @@ export function format(document, access = 0) {
 
   var formattedDocument = {
     '@context': this.context(),
+    '@id': `${Mongold._host ? Mongold._host : ''}${this.location}/${id}`
   };
 
   this.schemaKeys().forEach(key => {
