@@ -3,7 +3,7 @@ describe 'write operations', ->
   removeAll = (done) -> Test.a.remove {}, done
   before removeAll
   afterEach removeAll
-  afterEach () -> Test.b.detachSchema()
+  afterEach -> Test.b.detachSchema()
 
 
   it 'can insert a document', (done) ->
