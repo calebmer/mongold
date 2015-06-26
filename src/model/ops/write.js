@@ -29,16 +29,6 @@ internals.writeAction = action => {
       if (!document || !_.isObject(document)) {
         return callback(new Error('A document object is required'));
       }
-
-      document = this.clean(document);
-
-      // Validate the document
-      // If there is an error, use the callback
-      try {
-        this.check(document);
-      } catch (error) {
-        return callback(error);
-      }
     }
 
     if (action === 'update' || action === 'remove') {
@@ -66,10 +56,23 @@ internals.writeAction = action => {
     options = args.shift() || {};
 
     _.defaults(options, {
+      validate: true,
       writeConcern: {
         w: hasCallback ? 1 : 0
       }
     });
+
+    if (document && options.validate) {
+      document = this.clean(document);
+
+      // Validate the document
+      // If there is an error, use the callback
+      try {
+        this.check(document);
+      } catch (error) {
+        return callback(error);
+      }
+    }
 
     callback = _.wrap(callback, (next, error, response) => {
 
