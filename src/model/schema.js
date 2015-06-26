@@ -34,7 +34,8 @@ export function validate(document, options = {}, callback) {
   }
 
   _.defaults(options, {
-    greedy: true
+    greedy: true,
+    unique: true
   });
 
   var validateSingle = this._schema.validate;
@@ -72,27 +73,34 @@ export function validate(document, options = {}, callback) {
   }
   // If there is a callback we are executing asynchronously
   if (callback) {
-    Async.forEachOf(this._indexes, ({ unique }, key, next) => {
+    Async.parallel([
+      done => {
 
-      if (!unique) { return next(); }
+        if (!options.unique) { return done(); }
 
-      var value = _.get(document, key);
-      var selector = {};
-      _.set(selector, key, value);
-      this.findOne(selector, (error, notUnique) => {
+        Async.forEachOf(this._indexes, ({ unique }, key, next) => {
 
-        if (error) { return next(error); }
-        if (notUnique) {
-          errors.push({
-            field: `data.${key}`,
-            message: 'is not unique',
-            value
+          if (!unique) { return next(); }
+
+          var value = _.get(document, key);
+          var selector = {};
+          _.set(selector, key, value);
+          this.findOne(selector, (error, notUnique) => {
+
+            if (error) { return next(error); }
+            if (notUnique) {
+              errors.push({
+                field: `data.${key}`,
+                message: 'is not unique',
+                value
+              });
+            }
+
+            return next();
           });
-        }
-
-        return next();
-      });
-    }, error => {
+        }, done);
+      }
+    ], error => {
 
       if (error) { return callback(error, false); }
       callback(null, reportErrors());
