@@ -40,7 +40,7 @@ function Model(name, database) {
 
   // Define the uneditable name value
   Object.defineProperty(constructor, '_name', { value: name });
-  constructor.location = `/${this._name}`;
+  constructor.location = `/${constructor._name}`;
 
   // Use the default mongo database if undefined
   constructor._database = database;
