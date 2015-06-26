@@ -40,6 +40,7 @@ function Model(name, database) {
 
   // Define the uneditable name value
   Object.defineProperty(constructor, '_name', { value: name });
+  this.location = `/${this._name}`;
 
   // Use the default mongo database if undefined
   constructor._database = database;
@@ -56,6 +57,7 @@ function Model(name, database) {
     clean: function () { return bind('clean', this, arguments); },
     check: function () { return bind('check', this, arguments); },
     validate: function () { return bind('validate', this, arguments); },
+    format: function () { return bind('format', this, arguments); },
     save: function (callback) {
 
       var document = _.clone(this);
