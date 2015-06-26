@@ -18,7 +18,7 @@
   },
   "main": "lib/index.js",
   "scripts": {
-    "test": "node_modules/.bin/mocha -r node_modules/babel/register",
+    "test": "node_modules/.bin/mocha spec/*.test.* --require spec/environment",
     "compile": "mkdir -p lib && node_modules/.bin/babel src --out-dir lib",
     "prepublish": "npm run compile"
   },
@@ -31,6 +31,8 @@
   },
   "devDependencies": {
     "babel": "^5.5.6",
-    "mocha": "^2.2.5"
+    "coffee-script": "^1.9.3",
+    "mocha": "^2.2.5",
+    "should": "^7.0.1"
   }
 }

@@ -1,0 +1,31 @@
+// Load code
+require('babel/register');
+var Mongold = require('../src');
+
+// Now we can polute the global scope
+require('coffee-script/register');
+require('should');
+
+var Mocha = require('mocha');
+var MongoClient = require('mongodb').MongoClient;
+
+const URL = 'mongodb://localhost:27017/mongold-test';
+
+Mocha.before(function (done) {
+
+  global.Mongold = Mongold.default;
+  global.Database = Mongold.Database;
+  global.Model = Mongold.Model;
+
+  global.Mongold.connect(URL);
+
+  global.Test = {
+    b: new global.Model('test')
+  };
+
+  MongoClient.connect(URL, function (error, db) {
+
+    global.Test.a = db.collection('test');
+    done();
+  });
+});
