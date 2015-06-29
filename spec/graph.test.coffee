@@ -49,5 +49,9 @@ describe 'a graph', ->
     graph = new Graph 'a'
     graph.fetch (e, documents) ->
       done e if e?
-      console.log documents
+      documents.should.containDeep [hello: 'world']
+      documents.should.containDeep [hello: 'world2']
+      documents.should.containDeep [world: 'hello']
+      documents.should.containDeep [hello: 'moon2']
+      documents.should.containDeep [hello: 'moon']
       done()

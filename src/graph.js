@@ -1,13 +1,12 @@
 import _ from 'lodash';
 import Assert from 'assert';
-import Async from 'async';
 import {ObjectID} from 'mongodb';
 import {getCallback} from './utils';
 import Registry from './registry';
 import Model from './model';
 
 class Graph {
-  static linkData(document) {
+  static linkData(document, onJoin) {
 
     if (!document._id) { throw new Error('Document must have an id to be linked'); }
     if (!(document.constructor instanceof Model)) { throw new Error('Document must have been constructed by a model'); }
@@ -18,9 +17,13 @@ class Graph {
     _.each(document.constructor._joins, (modelName, property) => {
 
       var joinedId = _.get(document, property);
+      var model = Registry.get(modelName);
+
       if (joinedId && joinedId instanceof ObjectID) {
         _.set(linked, property, { '@id': `/${modelName}/${joinedId}` });
       }
+      // If a client defined a callback, call it!
+      if (onJoin) { onJoin(model, joinedId); }
     });
     // We do not need the `_id` property anymore
     delete linked._id;
@@ -40,50 +43,58 @@ class Graph {
   fetch() {
     // All documents pushed to graph should be restricted and linked
     var graph = [];
+    var waitingOn = 0;
     var args = _.toArray(arguments);
-    var callback = getCallback(args) || Assert.ifError;
+    var callback = _.once(getCallback(args) || Assert.ifError);
     var selector = args.shift() || {};
     var options = args.shift() || {};
 
     _.defaults(options, {
+      limit: 32,
       access: 0
     });
 
-    Async.waterfall([
-      done => this._model.find(selector, { limit: 32 }, done),
-      (documents, done) => {
-        // The start point for our graph is this data
-        graph = documents.map(document => {
+    // Decrement `waitingOn` and run callback when done
+    var next = error => {
 
-          document.restrict(options.access);
-          return Graph.linkData(document);
+      if (error) { return callback(error); }
+      if (waitingOn <= 0) { return undefined; }
+
+      waitingOn--;
+      if (waitingOn === 0) {
+        // Done, call the callback
+        callback(null, graph);
+      }
+    };
+
+    // Add document to the graph, check for joins, and run `next` to decrement `waitingOn`
+    var graphData = document => {
+
+      document.restrict(options.access);
+      document = Graph.linkData(document, (model, id) => {
+        // Increment `waitingOn` because we have a new document to find
+        waitingOn++;
+        model.findOne({ _id: id }, (error, joinedDocument) => {
+
+          if (error) { return next(error); }
+          if (!joinedDocument) { return next(); }
+          joinedDocument.restrict(0);
+          graphData(joinedDocument);
         });
-        // For all of our documents we must detect and apply joins
-        Async.each(documents, (document, nextDocument) => {
+      });
 
-          Async.forEachOf(this._model._joins, (modelName, property, nextJoin) => {
-            // Get the join's model
-            var model = Registry.get(modelName);
-            // Get the id for the join
-            var value = _.get(document, property);
-            // If we do not have on of the two pieces, do a silent return
-            if (!model || !value) { return nextJoin(); }
-            // Get the document to be joined
-            model.findOne({ _id: value }, (error, joinedDocument) => {
+      graph.push(document);
+      next();
+    };
 
-              if (error) { return nextJoin(error); }
-              if (!joinedDocument) { return nextJoin(); }
-              // Restrict > link > push
-              joinedDocument.restrict(0);
-              graph.push(Graph.linkData(joinedDocument));
-              nextJoin();
-            });
-          }, nextDocument);
-        }, done);
-      },
-      // The final result should return the final graph
-      done => done(null, graph)
-    ], callback);
+    // Find all our stuffs and add them to the graph
+    this._model.find(selector, options, (error, documents) => {
+
+      if (error) { return callback(error); }
+      // We have to wait for all of the documents to finish
+      waitingOn += documents.length;
+      documents.forEach(graphData);
+    });
   }
 
   fetchOne() {
