@@ -92,8 +92,9 @@ class Graph {
 
       if (error) { return callback(error); }
       // We have to wait for all of the documents to finish
-      waitingOn += documents.length;
+      waitingOn += documents.length + 1;
       documents.forEach(graphData);
+      next();
     });
   }
 
@@ -102,8 +103,9 @@ class Graph {
     var args = _.toArray(arguments);
     var callback = getCallback(args);
     var documentId = args.shift();
-    var options = args.shift();
+    var options = args.shift() || {};
 
+    if (!documentId) { throw new Error('A document id is required to fetch one document'); }
     _.extend(options, { limit: 1 });
 
     this.fetch({ _id: documentId }, options, callback);
