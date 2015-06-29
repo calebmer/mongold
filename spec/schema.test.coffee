@@ -77,16 +77,16 @@ describe 'schema methods', ->
     Test.b.schema( 'a.b.c.d' ).should.eql schemas.deep.properties.a.properties.b.properties.c.properties.d
 
 
-  it 'can get all schema keys', ->
+  it 'can get all object properties with the schema', ->
     Test.b.attachSchema schemas.coord
     Test.b.attachSchema schemas.coordPlus
     Test.b.attachSchema schemas.deep
-    Test.b.schemaKeys().should.be.eql [
+    Test.b.properties().should.be.eql [
       'x', 'y', 'z',
       'a', 'a.b', 'a.b.c',
       'a.b.c.d'
     ]
-    Test.b.schemaKeys( 'a.b' ).should.eql ['a.b.c', 'a.b.c.d']
+    Test.b.properties( 'a.b' ).should.eql ['a.b.c', 'a.b.c.d']
 
 
   it 'can validate asynchronously', (done) ->

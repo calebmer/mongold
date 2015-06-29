@@ -181,7 +181,7 @@ export function schema(path) {
   return this._schema.object;
 }
 
-export function schemaKeys(path) {
+export function properties(path) {
 
   var keys = [];
   function scanSchema(prefix, schemaPartial) {
