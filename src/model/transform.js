@@ -11,9 +11,3 @@ export function restrict(document, access) {
     _.set(document, key, undefined);
   });
 }
-
-/*export function extend(document, extension, access = 2) {
-
-  internals.restrict.call(this, extension, access);
-  _.merge(document, extension);
-}*/

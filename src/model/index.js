@@ -66,7 +66,6 @@ function Model(name, options = {}) {
     clean: function () { return bind('clean', this, arguments); },
     check: function () { return bind('check', this, arguments); },
     validate: function () { return bind('validate', this, arguments); },
-    extend: function () { return bind('extend', this, arguments); },
     restrict: function () { return bind('restrict', this, arguments); },
     save: function (callback) {
 
