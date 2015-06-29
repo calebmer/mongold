@@ -1,5 +1,10 @@
 import Database from './database';
 import Model from './model';
+import Registry from './registry';
+import Graph from './graph';
+
+export {Database, Model, Registry, Graph};
+export {ObjectId as Id} from 'mongodb';
 
 var Mongold = {
   _host: {},
@@ -16,6 +21,3 @@ var Mongold = {
 };
 
 export default Mongold;
-
-export {Database, Model};
-export {ObjectId as Id} from 'mongodb';

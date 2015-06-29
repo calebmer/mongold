@@ -13,11 +13,7 @@ describe 'the document constructor', ->
   it 'checks every document on construction', ->
     Test.b.attachSchema
       required: ['y']
-    errored = false
-    try new Test.b x: 5
-    catch
-      errored = true
-    errored.should.be.ok()
+    Should.throws -> new Test.b x: 5
     Test.b.detachSchema()
 
 

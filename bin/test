@@ -6,7 +6,7 @@ var Mongold = require('../src');
 
 // Now we can polute the global scope
 require('coffee-script/register');
-require('should');
+global.Should = require('should');
 
 var Path = require('path');
 var Assert = require('assert');
@@ -21,14 +21,17 @@ var mocha = new Mocha({
   reporter: 'spec'
 });
 
+global.Async = Async;
 global.Mongold = Mongold.default;
 global.Database = Mongold.Database;
 global.Model = Mongold.Model;
+global.Registry = Mongold.Registry;
+global.Graph = Mongold.Graph;
 
 global.Mongold.connect(URL);
 
 global.Test = {
-  b: new global.Model('test')
+  b: new global.Model('test', { register: false })
 };
 
 var exitCode = 0;

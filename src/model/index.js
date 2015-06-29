@@ -4,12 +4,20 @@ import Assert from 'assert';
 import {EventEmitter} from 'events';
 import Mongold from '../index';
 import Database from '../database';
+import Registry from '../registry';
 
-function Model(name, database) {
-  // Use the default database if none was passed
-  database = database || Mongold.database;
+function Model(name, options = {}) {
 
-  if (!database || !(database instanceof Database)) {
+  _.defaults(options, {
+    // Use the default database if none was passed
+    database: Mongold.database,
+    register: true
+  });
+
+  // If a model with this name exists, just give it back
+  if (options.register && Registry.exists(name)) { return Registry.get(name); }
+
+  if (!options.database || !(options.database instanceof Database)) {
     throw new Error('Model requires a database');
   }
 
@@ -38,27 +46,28 @@ function Model(name, database) {
   EventEmitter.apply(constructor);
   whenReady(constructor);
 
-  // Define the uneditable name value
+  // Define the uneditable name and database values
   Object.defineProperty(constructor, '_name', { value: name });
-  constructor.location = `/${constructor._name}`;
-
-  // Use the default mongo database if undefined
-  constructor._database = database;
+  Object.defineProperty(constructor, '_database', { value: options.database });
 
   constructor._database.on('ready', () => {
 
-    constructor._collection = constructor._database._connection.collection(constructor._name);
+    Object.defineProperty(constructor, '_collection', {
+      value: constructor._database._connection.collection(constructor._name)
+    });
     constructor.emit('ready', constructor._collection);
   });
 
   var bind = (method, context, args) => constructor[method].apply(constructor, [context].concat(_.toArray(args)));
 
   constructor.prototype = Object.create({
+    // For whatever reason this gets removed
+    constructor,
     clean: function () { return bind('clean', this, arguments); },
     check: function () { return bind('check', this, arguments); },
     validate: function () { return bind('validate', this, arguments); },
     extend: function () { return bind('extend', this, arguments); },
-    format: function () { return bind('format', this, arguments); },
+    restrict: function () { return bind('restrict', this, arguments); },
     save: function (callback) {
 
       var document = _.clone(this);
@@ -72,6 +81,8 @@ function Model(name, database) {
     }
   });
 
+  // Add the registry (for convenience)
+  if (options.register) { Registry.add(constructor); }
   // Overrides `this` when using `new` syntax
   return constructor;
 }
@@ -79,8 +90,8 @@ function Model(name, database) {
 import * as Schema from './schema';
 import * as Ops from './ops';
 import * as Indexes from './indexes';
-import * as Context from './context';
 import * as Transform from './transform';
+import * as Joins from './joins';
 
 // Establish the correct prototype chain
 // Function > EventEmitter > Model
@@ -93,7 +104,7 @@ Model.prototype = (() => {
   _.extend(prototype, EventEmitter.prototype);
 
   prototype = Object.create(prototype);
-  _.extend(prototype, Schema, Ops, Indexes, Context, Transform);
+  _.extend(prototype, Schema, Ops, Indexes, Transform, Joins);
 
   return prototype;
 })();

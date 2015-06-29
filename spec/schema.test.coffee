@@ -37,7 +37,7 @@ describe 'schema methods', ->
 
   it 'can get a schema', ->
     Test.b.attachSchema schemas.coord
-    Test.b.schema().should.containEql schemas.coord
+    Test.b.schema().should.containDeep schemas.coord
 
 
   it 'will merge multiple schemas together', ->
@@ -61,11 +61,7 @@ describe 'schema methods', ->
 
   it 'can quickly check a document', ->
     Test.b.attachSchema schemas.coord
-    errored = false
-    try Test.b.check y: 'hello'
-    catch
-      errored = true
-    errored.should.be.ok()
+    Should.throws -> Test.b.check y: 'hello'
 
 
   it 'can clean a document', ->
