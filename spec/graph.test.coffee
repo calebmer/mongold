@@ -15,8 +15,6 @@ describe 'a graph', ->
   c1 = new C hello: 'moon'
   c2 = undefined
 
-  graph = new Graph 'a'
-
   before (done) ->
     Async.series [
       (next) ->
@@ -48,7 +46,7 @@ describe 'a graph', ->
 
 
   it 'can fetch a graph', (done) ->
-    graph.fetch (e, documents) ->
+    Graph.fetch 'a', (e, documents) ->
       done e if e?
       documents.should.containDeep [hello: 'world']
       documents.should.containDeep [hello: 'world2']
@@ -59,7 +57,7 @@ describe 'a graph', ->
 
 
   it 'can fetch one document\'s graph', (done) ->
-    graph.fetchOne a1._id, (e, documents) ->
+    Graph.fetchOne 'a', a1._id, (e, documents) ->
       done e if e?
       documents.should.containDeep [hello: 'world']
       done()

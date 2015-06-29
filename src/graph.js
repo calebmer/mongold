@@ -5,8 +5,23 @@ import {getCallback} from './utils';
 import Registry from './registry';
 import Model from './model';
 
-class Graph {
-  static linkData(document, onJoin) {
+var internals = {};
+internals.breakdownArgs = function (args) {
+
+  // console.log(args);
+  var callback = _.once(getCallback(args) || Assert.ifError);
+  var model = args.shift();
+  var selector = args.shift() || {};
+  var options = args.shift() || {};
+
+  if (_.isString(model)) { model = Registry.get(model); }
+  if (!model) { throw new Error('Model is required'); }
+
+  return {callback, model, selector, options};
+};
+
+var Graph = {
+  linkData: function (document, onJoin) {
 
     if (!document._id) { throw new Error('Document must have an id to be linked'); }
     if (!(document.constructor instanceof Model)) { throw new Error('Document must have been constructed by a model'); }
@@ -28,26 +43,12 @@ class Graph {
     // We do not need the `_id` property anymore
     delete linked._id;
     return linked;
-  }
-
-  constructor(model) {
-
-    if (_.isString(model)) {
-      if (!Registry.exists(model)) { throw new Error(`Model '${model}' does not exist!`); }
-      model = Registry.get(model);
-    }
-
-    this._model = model;
-  }
-
-  fetch() {
+  },
+  fetch: function () {
     // All documents pushed to graph should be restricted and linked
     var graph = [];
     var waitingOn = 0;
-    var args = _.toArray(arguments);
-    var callback = _.once(getCallback(args) || Assert.ifError);
-    var selector = args.shift() || {};
-    var options = args.shift() || {};
+    var {model, selector, options, callback} = internals.breakdownArgs(_.toArray(arguments));
 
     _.defaults(options, {
       limit: 32,
@@ -71,10 +72,10 @@ class Graph {
     var graphData = document => {
 
       document.restrict(options.access);
-      document = Graph.linkData(document, (model, id) => {
+      document = Graph.linkData(document, (joinModel, id) => {
         // Increment `waitingOn` because we have a new document to find
         waitingOn++;
-        model.findOne({ _id: id }, (error, joinedDocument) => {
+        joinModel.findOne({ _id: id }, (error, joinedDocument) => {
 
           if (error) { return next(error); }
           if (!joinedDocument) { return next(); }
@@ -88,7 +89,7 @@ class Graph {
     };
 
     // Find all our stuffs and add them to the graph
-    this._model.find(selector, options, (error, documents) => {
+    model.find(selector, options, (error, documents) => {
 
       if (error) { return callback(error); }
       // We have to wait for all of the documents to finish
@@ -96,20 +97,18 @@ class Graph {
       documents.forEach(graphData);
       next();
     });
-  }
+  },
+  fetchOne: function () {
 
-  fetchOne() {
+    var {model, selector, options, callback} = internals.breakdownArgs(_.toArray(arguments));
+    var documentId = selector;
 
-    var args = _.toArray(arguments);
-    var callback = getCallback(args);
-    var documentId = args.shift();
-    var options = args.shift() || {};
-
-    if (!documentId) { throw new Error('A document id is required to fetch one document'); }
+    // console.log(documentId);
+    if (!(documentId && documentId instanceof ObjectID)) { throw new Error('A document id is required to fetch one document'); }
     _.extend(options, { limit: 1 });
 
-    this.fetch({ _id: documentId }, options, callback);
+    Graph.fetch(model, { _id: documentId }, options, callback);
   }
-}
+};
 
 export default Graph;
