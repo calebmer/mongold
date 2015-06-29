@@ -6,7 +6,9 @@ describe 'schema methods', ->
       required: ['x']
       additionalProperties: false
       properties:
-        x: type: 'number'
+        x:
+          type: 'number'
+          thing: true
         y: type: 'number'
     coordPlus:
       type: 'object'
@@ -21,6 +23,7 @@ describe 'schema methods', ->
           properties:
             b:
               type: 'object'
+              thing: false
               properties:
                 c:
                   type: 'object'
@@ -81,19 +84,22 @@ describe 'schema methods', ->
     Test.b.attachSchema schemas.coord
     Test.b.attachSchema schemas.coordPlus
     Test.b.attachSchema schemas.deep
-    Test.b.properties().should.be.eql [
+    Test.b.properties().should.eql [
       'x', 'y', 'z',
       'a', 'a.b', 'a.b.c',
       'a.b.c.d'
     ]
     Test.b.properties( 'a.b' ).should.eql ['a.b.c', 'a.b.c.d']
+    Test.b.extractOptions( 'thing' ).should.eql
+      x: thing: true
+      'a.b': thing: false
 
 
-  it 'can validate asynchronously', (done) ->
-    Test.b.index 'a'
-    Test.b.index 'c', unique: false
+  it 'can validate uniqueness asynchronously', (done) ->
     Test.b.attachSchema
       required: ['b']
+      properties:
+        a: unique: true
     Test.a.insert {a: 1, c: 3}, (e) ->
       done e if e?
       Test.b.validate {a: 1, c: 3}, (e, validationErrors) ->

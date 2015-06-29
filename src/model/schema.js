@@ -78,19 +78,19 @@ export function validate(document, options = {}, callback) {
 
         if (!options.unique) { return done(); }
 
-        Async.forEachOf(this._indexes, ({ unique }, key, next) => {
+        Async.forEachOf(this.extractOptions('unique'), ({ unique }, property, next) => {
 
           if (!unique) { return next(); }
 
-          var value = _.get(document, key);
+          var value = _.get(document, property);
           var selector = {};
-          _.set(selector, key, value);
+          _.set(selector, property, value);
           this.findOne(selector, (error, notUnique) => {
 
             if (error) { return next(error); }
             if (notUnique) {
               errors.push({
-                field: `data.${key}`,
+                field: `data.${property}`,
                 message: 'is not unique',
                 value
               });
@@ -143,15 +143,14 @@ export function attachSchema(attachment) {
   if (!this._schema.object) {
     this._schema.object = {
       'type': 'object',
-      'properties': {
-        '_id': {}
-      }
+      'properties': { '_id': {} }
     };
   }
 
   // Merge the schemas, if we are merging arrays concatenate them and make sure values are unique
   _.merge(this._schema.object, attachment, (a, b) => _.isArray(a) ? _.unique(a.concat(b)) : undefined);
   internals.recompileValidators.call(this);
+  this.emit('schemaChanged');
 }
 
 export function detachSchema() {
@@ -159,6 +158,7 @@ export function detachSchema() {
   internals.updateState.call(this);
   delete this._schema.object;
   internals.recompileValidators.call(this, true);
+  this.emit('schemaChanged');
 }
 
 export function schema(path) {
@@ -183,6 +183,7 @@ export function schema(path) {
 
 export function properties(path) {
 
+  if (!_.isString(path)) { path = ''; }
   var keys = [];
   function scanSchema(prefix, schemaPartial) {
 
@@ -200,6 +201,19 @@ export function properties(path) {
     }
   }
 
-  scanSchema(path || '', this.schema(path));
+  scanSchema(path, this.schema(path));
   return keys;
+}
+
+export function extractOptions(option, path) {
+
+  var extracted = {};
+  this.properties(path).forEach(key => {
+
+    var schemaPartial = this.schema(key);
+    if (schemaPartial && schemaPartial[option] !== undefined) {
+      extracted[key] = { [option]: schemaPartial[option] };
+    }
+  });
+  return extracted;
 }
