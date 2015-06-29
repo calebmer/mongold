@@ -75,7 +75,7 @@ var Graph = {
       document = Graph.linkData(document, (joinModel, id) => {
         // Increment `waitingOn` because we have a new document to find
         waitingOn++;
-        joinModel.findOne({ _id: id }, (error, joinedDocument) => {
+        joinModel.findOne({ _id: id }, { terse: true }, (error, joinedDocument) => {
 
           if (error) { return next(error); }
           if (!joinedDocument) { return next(); }

@@ -7,11 +7,6 @@ var internals = {};
 
 internals.formatOptions = function (options) {
 
-  _.defaults(options, { cursor: false });
-
-  // Allow users to define own projection properties
-  options.projection = options.projection || {};
-
   if (_.isArray(options.include)) { options.include.forEach(property => options.projection[property] = 1); }
   if (_.isArray(options.exclude)) { options.exclude.forEach(property => options.projection[property] = 0); }
 
@@ -36,6 +31,17 @@ export function find() {
 
   if (selector._id && !(selector._id instanceof Id)) {
     selector._id = new Id(selector._id);
+  }
+
+  _.defaults(options, {
+    cursor: false,
+    terse: false,
+    projection: {}
+  });
+
+  if (options.terse) {
+    var terseProperties = Object.keys(_.filter(this.extractOptions('terse'), config => config.terse));
+    terseProperties.forEach(property => _.set(options.projection, property, 1));
   }
 
   internals.formatOptions(options);
