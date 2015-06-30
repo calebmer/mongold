@@ -25,5 +25,6 @@ describe 'the document constructor', ->
         x: type: 'number'
         y: type: 'number'
     document = new Test.b x: 5, y: 2
+    console.log document['@id']
     document.should.not.have.property 'z'
     Test.b.detachSchema()

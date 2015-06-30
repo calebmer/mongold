@@ -1,9 +1,7 @@
 import Database from './database';
 import Model from './model';
-import Registry from './registry';
-import Graph from './graph';
 
-export {Database, Model, Registry, Graph};
+export {Database, Model};
 export {ObjectId as Id} from 'mongodb';
 
 var Mongold = {

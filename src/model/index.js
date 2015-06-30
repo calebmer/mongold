@@ -4,18 +4,13 @@ import Assert from 'assert';
 import {EventEmitter} from 'events';
 import Mongold from '../index';
 import Database from '../database';
-import Registry from '../registry';
 
 function Model(name, options = {}) {
 
   _.defaults(options, {
     // Use the default database if none was passed
-    database: Mongold.database,
-    register: true
+    database: Mongold.database
   });
-
-  // If a model with this name exists, just give it back
-  if (options.register && Registry.exists(name)) { return Registry.get(name); }
 
   if (!options.database || !(options.database instanceof Database)) {
     throw new Error('Model requires a database');
@@ -80,16 +75,13 @@ function Model(name, options = {}) {
     }
   });
 
-  // Add the registry (for convenience)
-  if (options.register) { Registry.add(constructor); }
+
   // Overrides `this` when using `new` syntax
   return constructor;
 }
-
 import * as Schema from './schema';
 import * as Ops from './ops';
 import * as Indexes from './indexes';
-import * as Transform from './transform';
 import * as Joins from './joins';
 
 // Establish the correct prototype chain
@@ -103,7 +95,7 @@ Model.prototype = (() => {
   _.extend(prototype, EventEmitter.prototype);
 
   prototype = Object.create(prototype);
-  _.extend(prototype, Schema, Ops, Indexes, Transform, Joins);
+  _.extend(prototype, Schema, Ops, Indexes, Joins);
 
   return prototype;
 })();
