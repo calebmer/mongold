@@ -73,12 +73,8 @@ function Model(name, options = {}) {
         this._id = id;
         callback(error, id);
       });
-    }
-  });
-
-  // Define the id property to be dynamically generated
-  Object.defineProperty(constructor.prototype, '@id', {
-    get: function () {
+    },
+    getUrl: function () {
 
       if (!this._id) { return undefined; }
       return options.documentEndpoint.replace(':id', this._id);

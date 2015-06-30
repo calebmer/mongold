@@ -1,14 +1,14 @@
 {
   "name": "mongold",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "A MongoDB ORM for the Linked Data age—WIP",
   "author": "Caleb Meredith <calebmeredith8@gmail.com>",
   "keywords": [
-    "mongodb",
     "json",
-    "jsonld",
     "json schema",
+    "jsonld",
     "linked data",
+    "mongodb",
     "orm"
   ],
   "liscense": "MIT",
@@ -18,14 +18,15 @@
   },
   "main": "lib/index.js",
   "scripts": {
-    "test": "bin/test",
     "compile": "mkdir -p lib && node_modules/.bin/babel src --out-dir lib",
-    "prepublish": "npm run compile"
+    "prepublish": "npm run compile",
+    "test": "bin/test"
   },
   "dependencies": {
     "async": "^1.2.0",
     "debug": "^2.2.0",
     "is-my-json-valid": "^2.12.0",
+    "json-pointer": "^0.3.0",
     "lodash": "^3.9.3",
     "mongodb": "^2.0.33"
   },

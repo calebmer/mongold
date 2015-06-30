@@ -35,12 +35,3 @@ describe 'the document constructor', ->
       done e if e?
       document.should.have.property '_id'
       done()
-
-
-  it 'provides an @id property that resolves to the url', (done) ->
-    document = new Test.b x: 5, y: 2
-    Should( document['@id'] ).not.be.ok()
-    document.save (e) ->
-      done e if e?
-      document['@id'].should.be.exactly '/test/' + document._id
-      done()

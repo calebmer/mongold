@@ -1,6 +1,6 @@
 import _ from 'lodash';
 import Assert from 'assert';
-import {Id} from '../../index';
+import {ObjectId} from 'mongodb';
 import {getCallback} from '../../utils';
 
 var internals = {};
@@ -28,19 +28,14 @@ export function find() {
   var selector = args.shift() || {};
   var options = args.shift() || {};
 
-  if (selector._id && !(selector._id instanceof Id)) {
-    selector._id = new Id(selector._id);
+  if (selector._id && !(selector._id instanceof ObjectId)) {
+    selector._id = new ObjectId(selector._id);
   }
 
   _.defaults(options, {
     cursor: false,
-    terse: false,
     projection: {}
   });
-
-  if (options.terse && this.schema().terse) {
-    this.schema().terse.forEach(property => _.set(options.projection, property, 1));
-  }
 
   internals.formatOptions(options);
 

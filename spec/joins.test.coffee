@@ -1,12 +1,12 @@
-describe 'a graph', ->
+describe 'join methods', ->
 
   A = new Model 'a'
   B = new Model 'b'
   C = new Model 'c'
   A.join
-    propB: 'b'
-    propC: C
-  C.join 'propC', C
+    '/propB': B
+    '/propC': C
+  C.join '/propC', C
 
   a1 = new A hello: 'world'
   a2 = undefined
@@ -45,19 +45,13 @@ describe 'a graph', ->
   after (done) -> C.remove done
 
 
-  it.skip 'can fetch a graph', (done) ->
-    Graph.fetch 'a', (e, documents) ->
+  it 'can fetch a graph', (done) ->
+    A.fetch (e, documents) ->
       done e if e?
+      console.log documents
       documents.should.containDeep [hello: 'world']
       documents.should.containDeep [hello: 'world2']
       documents.should.containDeep [world: 'hello']
       documents.should.containDeep [hello: 'moon2']
       documents.should.containDeep [hello: 'moon']
-      done()
-
-
-  it.skip 'can fetch one document\'s graph', (done) ->
-    Graph.fetchOne 'a', a1._id, (e, documents) ->
-      done e if e?
-      documents.should.containDeep [hello: 'world']
       done()
