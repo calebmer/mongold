@@ -25,7 +25,6 @@ export function find() {
 
   var args = _.toArray(arguments);
   var callback = getCallback(args) || Assert.ifError;
-
   var selector = args.shift() || {};
   var options = args.shift() || {};
 
