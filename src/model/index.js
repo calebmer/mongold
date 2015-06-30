@@ -9,7 +9,8 @@ function Model(name, options = {}) {
 
   _.defaults(options, {
     // Use the default database if none was passed
-    database: Mongold.database
+    database: Mongold.database,
+    documentEndpoint: `/${name}/:id`
   });
 
   if (!options.database || !(options.database instanceof Database)) {
@@ -75,10 +76,19 @@ function Model(name, options = {}) {
     }
   });
 
+  // Define the id property to be dynamically generated
+  Object.defineProperty(constructor.prototype, '@id', {
+    get: function () {
+
+      if (!this._id) { return undefined; }
+      return options.documentEndpoint.replace(':id', this._id);
+    }
+  });
 
   // Overrides `this` when using `new` syntax
   return constructor;
 }
+
 import * as Schema from './schema';
 import * as Ops from './ops';
 import * as Indexes from './indexes';
