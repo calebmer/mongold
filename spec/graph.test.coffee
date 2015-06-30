@@ -45,7 +45,7 @@ describe 'a graph', ->
   after (done) -> C.remove done
 
 
-  it 'can fetch a graph', (done) ->
+  it.skip 'can fetch a graph', (done) ->
     Graph.fetch 'a', (e, documents) ->
       done e if e?
       documents.should.containDeep [hello: 'world']
@@ -56,7 +56,7 @@ describe 'a graph', ->
       done()
 
 
-  it 'can fetch one document\'s graph', (done) ->
+  it.skip 'can fetch one document\'s graph', (done) ->
     Graph.fetchOne 'a', a1._id, (e, documents) ->
       done e if e?
       documents.should.containDeep [hello: 'world']

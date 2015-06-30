@@ -39,9 +39,8 @@ export function find() {
     projection: {}
   });
 
-  if (options.terse) {
-    var terseProperties = Object.keys(_.filter(this.extractOptions('terse'), config => config.terse));
-    terseProperties.forEach(property => _.set(options.projection, property, 1));
+  if (options.terse && this.schema().terse) {
+    this.schema().terse.forEach(property => _.set(options.projection, property, 1));
   }
 
   internals.formatOptions(options);

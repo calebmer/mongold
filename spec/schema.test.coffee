@@ -38,12 +38,12 @@ describe 'schema methods', ->
   it 'can attach a schema', -> Test.b.attachSchema schemas.coord
 
 
-  it 'can get a schema', ->
+  it.skip 'can get a schema', ->
     Test.b.attachSchema schemas.coord
     Test.b.schema().should.containDeep schemas.coord
 
 
-  it 'will merge multiple schemas together', ->
+  it.skip 'will merge multiple schemas together', ->
     Test.b.attachSchema schemas.coord
     Test.b.attachSchema schemas.coordPlus
     Test.b.schema().should.containDeep schemas.coord
@@ -74,13 +74,13 @@ describe 'schema methods', ->
     cleaned.should.not.eql z: 5, a: 1
 
 
-  it 'can get schema pieces', ->
+  it.skip 'can get schema pieces', ->
     Test.b.attachSchema schemas.deep
     Test.b.schema( 'a' ).should.eql schemas.deep.properties.a
     Test.b.schema( 'a.b.c.d' ).should.eql schemas.deep.properties.a.properties.b.properties.c.properties.d
 
 
-  it 'can get all object properties with the schema', ->
+  it.skip 'can get all object properties with the schema', ->
     Test.b.attachSchema schemas.coord
     Test.b.attachSchema schemas.coordPlus
     Test.b.attachSchema schemas.deep
@@ -95,7 +95,7 @@ describe 'schema methods', ->
       'a.b': thing: false
 
 
-  it 'can validate uniqueness asynchronously', (done) ->
+  it.skip 'can validate uniqueness asynchronously', (done) ->
     Test.b.attachSchema
       required: ['b']
       properties:
