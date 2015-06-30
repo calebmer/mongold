@@ -21,9 +21,9 @@ internals.formatOptions = function (options) {
   }
 };
 
-internals.getCursor = _.memoize((selector, options) => {
+internals.getCursor = _.memoize((collection, selector, options) => {
 
-  var cursor = this._collection.find(selector, options.projection);
+  var cursor = collection.find(selector, options.projection);
 
   if (options.sort) { cursor.sort(options.sort); }
   if (options.skip) { cursor.skip(options.skip); }
@@ -52,7 +52,7 @@ export function find() {
 
   this.on('ready', () => {
 
-    var cursor = internals.getCursor(selector, options);
+    var cursor = internals.getCursor(this._collection, selector, options);
 
     // If the user wants the cursor
     if (options.cursor) {
