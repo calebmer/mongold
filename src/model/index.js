@@ -56,13 +56,15 @@ function Model(name, options = {}) {
 
   var bind = (method, context, args) => constructor[method].apply(constructor, [context].concat(_.toArray(args)));
 
+  constructor.getUrl = (id) => id ? options.documentEndpoint.replace(':id', id) : undefined;
+
   constructor.prototype = Object.create({
     // For whatever reason this gets removed
     constructor,
     clean: function () { return bind('clean', this, arguments); },
     check: function () { return bind('check', this, arguments); },
     validate: function () { return bind('validate', this, arguments); },
-    restrict: function () { return bind('restrict', this, arguments); },
+    getUrl: function () { return constructor.getUrl(this._id); },
     save: function (callback) {
 
       var document = _.clone(this);
@@ -73,11 +75,6 @@ function Model(name, options = {}) {
         this._id = id;
         callback(error, id);
       });
-    },
-    getUrl: function () {
-
-      if (!this._id) { return undefined; }
-      return options.documentEndpoint.replace(':id', this._id);
     }
   });
 
