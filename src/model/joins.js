@@ -73,6 +73,7 @@ export function linkify(document, onLink) {
 
 export function delinkify(linkedDocument) {
 
+  if (!linkedDocument) { return {}; }
   var document = { _id: internals.idFromUrl(linkedDocument['@id']) };
   var dontCopy = ['/@id'];
 
