@@ -6,6 +6,8 @@ import {getCallback} from '../../utils';
 
 var internals = {};
 
+internals.pointerToPath = pointer => pointer.replace(/^\//, '').replace(/\//, '.');
+
 internals.formatArgs = function (args) {
 
   if (!this._collection) { throw new Error('Wait for a MongoDB connection to be established before finding documents'); }
@@ -21,12 +23,17 @@ internals.formatArgs = function (args) {
     } catch (error) { /* Silence */ }
   }
 
-  _.defaults(options, { projection: {} });
-
   if (_.isArray(options)) { options = { include: options }; }
 
-  if (_.isArray(options.include)) { options.include.forEach(property => options.projection[property] = 1); }
-  if (_.isArray(options.exclude)) { options.exclude.forEach(property => options.projection[property] = 0); }
+  _.defaults(options, {
+    projection: {},
+    terse: false
+  });
+
+  if (options.terse && this._terse) { options.include = (options.include || []).concat(this._terse); }
+
+  if (_.isArray(options.include)) { options.include.map(internals.pointerToPath).forEach(property => options.projection[property] = 1); }
+  if (_.isArray(options.exclude)) { options.exclude.map(internals.pointerToPath).forEach(property => options.projection[property] = 0); }
 
   // Allow for prettier sort definitions
   if (options.sort) {
@@ -79,4 +86,10 @@ export function valueExists(pointer, value, callback) {
     if (error) { return callback(error); }
     callback(null, document ? true : false);
   });
+}
+
+export function terse(pointers) {
+
+  if (!_.isArray(pointers)) { pointers = [pointers]; }
+  this._terse = (this._terse || []).concat(pointers);
 }

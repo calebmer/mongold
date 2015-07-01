@@ -106,6 +106,7 @@ export function graph() {
   var selector = args.shift() || {};
   var options = args.shift() || {};
 
+  var graphedIds = [];
   var theGraph = [];
   var waitingOn = 0;
 
@@ -120,12 +121,16 @@ export function graph() {
 
   function fetch(document) {
 
+    graphedIds.push(document._id.toString());
+
     var linkedDocument = document.linkify((model, id) => {
+      // If the id has already been graphed, skip
+      if (_.contains(graphedIds, id.toString())) { return; }
 
       // Increment waiting on
       waitingOn++;
 
-      model.findOne({ _id: id }, (error, joinedDocument) => {
+      model.findOne({ _id: id }, { terse: true }, (error, joinedDocument) => {
 
         if (error) { return next(error); }
         // If the document was not found

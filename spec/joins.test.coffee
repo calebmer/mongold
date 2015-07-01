@@ -2,6 +2,7 @@ describe 'join methods', ->
 
   A = new Model 'a'
   B = new Model 'b'
+  B.terse ['/world']
   C = new Model 'c'
   A.join
     '/propB': B
@@ -10,7 +11,9 @@ describe 'join methods', ->
 
   a1 = new A hello: 'world'
   a2 = undefined
-  b1 = new B world: 'hello'
+  b1 = new B
+    world: 'hello'
+    invisible: 'wow'
   b2 = new B world: 'goodbye'
   c1 = new C hello: 'moon'
   c2 = undefined
@@ -53,4 +56,5 @@ describe 'join methods', ->
       documents.should.containDeep [world: 'hello']
       documents.should.containDeep [hello: 'moon2']
       documents.should.containDeep [hello: 'moon']
+      documents.should.not.containDeep [invisible: 'wow']
       done()
