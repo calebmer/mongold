@@ -62,6 +62,7 @@ function Model(name, options = {}) {
     clean: function () { return bind('clean', this, arguments); },
     check: function () { return bind('check', this, arguments); },
     validate: function () { return bind('validate', this, arguments); },
+    restrict: function () { return bind('restrict', this, arguments); },
     linkify: function () { return bind('linkify', this, arguments); },
     getUrl: function () { return constructor.getUrl(this._id); },
     save: function (callback) {
@@ -85,6 +86,7 @@ import * as Schema from './schema';
 import * as Ops from './ops';
 import * as Indexes from './indexes';
 import * as Joins from './joins';
+import * as Access from './access';
 
 // Establish the correct prototype chain
 // Function > EventEmitter > Model
@@ -97,7 +99,7 @@ Model.prototype = (() => {
   _.extend(prototype, EventEmitter.prototype);
 
   prototype = Object.create(prototype);
-  _.extend(prototype, Schema, Ops, Indexes, Joins);
+  _.extend(prototype, Schema, Ops, Indexes, Joins, Access);
 
   return prototype;
 })();
