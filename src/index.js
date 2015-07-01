@@ -5,8 +5,7 @@ export {Database, Model};
 export {ObjectId as Id} from 'mongodb';
 
 var Mongold = {
-  _host: {},
-  host: function (url) { this._host = url; },
+  serverUrl: '',
   connect: function (url) {
     // Set the default database to a new instance
     this.database = new Database(url);

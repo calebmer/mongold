@@ -56,7 +56,7 @@ function Model(name, options = {}) {
 
   var bind = (method, context, args) => constructor[method].apply(constructor, [context].concat(_.toArray(args)));
 
-  constructor.getUrl = (id) => id ? options.documentEndpoint.replace(':id', id) : undefined;
+  constructor.getUrl = (id) => id ? Mongold.serverUrl + options.documentEndpoint.replace(':id', id) : undefined;
 
   constructor.prototype = Object.create({
     clean: function () { return bind('clean', this, arguments); },

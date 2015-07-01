@@ -1,6 +1,6 @@
 {
   "name": "mongold",
-  "version": "0.5.7",
+  "version": "0.5.8",
   "description": "A MongoDB ORM for the Linked Data age—WIP",
   "author": "Caleb Meredith <calebmeredith8@gmail.com>",
   "keywords": [
@@ -8,8 +8,7 @@
     "json schema",
     "jsonld",
     "linked data",
-    "mongodb",
-    "orm"
+    "mongodb"
   ],
   "liscense": "MIT",
   "repository": {
