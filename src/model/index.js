@@ -64,6 +64,7 @@ function Model(name, options = {}) {
     clean: function () { return bind('clean', this, arguments); },
     check: function () { return bind('check', this, arguments); },
     validate: function () { return bind('validate', this, arguments); },
+    linkify: function () { return bind('linkify', this, arguments); },
     getUrl: function () { return constructor.getUrl(this._id); },
     save: function (callback) {
 

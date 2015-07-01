@@ -18,6 +18,50 @@ export function join(pointer, model) {
   this._joins[pointer] = model;
 }
 
+export function linkify(document, onLink) {
+
+  var linkedDocument = {
+    '@id': document.getUrl()
+  };
+
+  var dontCopy = ['/_id'];
+
+  _.each(this._joins, (model, pointer) => {
+    // If the pointed value does not exist end
+    if (!Pointer.has(document, pointer)) { return; }
+    var id = Pointer.get(document, pointer);
+
+    // If the value is not an id, it is not what we want
+    if (!(id instanceof ObjectId)) { return; }
+
+    // Output the json-ld style reference
+    Pointer.set(linkedDocument, pointer, { '@id': model.getUrl(id) });
+
+    // Let's not copy that again, then call the callback
+    dontCopy.push(pointer);
+    onLink(model, id);
+  });
+
+  dontCopy = new RegExp('^' + dontCopy.map(pointer => _.escapeRegExp(pointer)).join('|'));
+
+  _.each(Pointer.dict(document), (value, pointer) => {
+    // We are using a bad property, don't copy
+    if (dontCopy.test(pointer)) { return; }
+    Pointer.set(linkedDocument, pointer, value);
+  });
+
+  return linkedDocument;
+}
+
+// TODO: STREAMIFY
+// TODO: STREAMIFY
+// TODO: STREAMIFY
+// TODO: STREAMIFY
+// TODO: STREAMIFY
+// TODO: STREAMIFY
+// TODO: STREAMIFY
+// TODO: STREAMIFY
+// TODO: STREAMIFY
 export function graph() {
 
   var args = _.toArray(arguments);
@@ -39,34 +83,22 @@ export function graph() {
 
   function fetch(document) {
 
-    _.each(document.constructor._joins, (model, pointer) => {
+    var linkedDocument = document.linkify((model, id) => {
 
       // Increment waiting on
       waitingOn++;
 
-      // Get the object id, `Pointer.get` throws error if it does not exist
-      if (!Pointer.has(document, pointer)) { return next(); }
-      var id = Pointer.get(document, pointer);
-      if (!(id instanceof ObjectId)) { return next(); }
-
-      // Find the joined document
       model.findOne({ _id: id }, (error, joinedDocument) => {
 
         if (error) { return next(error); }
         // If the document was not found
         if (!joinedDocument) { return next(); }
-
-        // Set the reference to the json-ld format
-        Pointer.set(document, pointer, { '@id': joinedDocument.getUrl() });
-
         // Run the fetch command on the new document
         fetch(joinedDocument);
       });
     });
 
-    document['@id'] = document.getUrl();
-    delete document._id;
-    theGraph.push(document);
+    theGraph.push(linkedDocument);
     next();
   }
 
