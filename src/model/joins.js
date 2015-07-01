@@ -13,6 +13,8 @@ internals.idFromUrl = url => {
   url = url.split('/');
   var id = url[url.length - 1];
 
+  console.log(id);
+
   try {
     return new ObjectId(id);
   } catch (error) { /* Silence */ }
@@ -61,7 +63,7 @@ export function linkify(document, onLink) {
 
     // Let's not copy that again, then call the callback
     dontCopy.push(pointer);
-    onLink(model, id);
+    if (onLink) { onLink(model, id); }
   });
 
   internals.copy(document, linkedDocument, dontCopy);
@@ -76,10 +78,10 @@ export function delinkify(linkedDocument) {
 
   _.each(this._joins, (model, pointer) => {
 
-    if (!Pointer.has(document, pointer)) { return; }
-    var url = Pointer.get(document, pointer)['@id'];
+    if (!Pointer.has(linkedDocument, pointer)) { return; }
+    var url = Pointer.get(linkedDocument, pointer)['@id'];
     if (!url) { return; }
-    Pointer.set(linkedDocument, pointer, internals.idFromUrl(url));
+    Pointer.set(document, pointer, internals.idFromUrl(url));
     dontCopy.push(pointer);
   });
 
