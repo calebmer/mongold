@@ -68,7 +68,8 @@ export function findOne() {
   var {selector, options, callback} = internals.formatArgs.call(this, arguments);
   callback = callback || Assert.ifError;
 
-  this._collection.findOne(selector, options.projection, (error, document) => callback(error, new this(document)));
+  this._collection.findOne(selector, options.projection,
+    (error, document) => callback(error, document ? new this(document) : undefined));
 }
 
 export function valueExists(pointer, value, callback) {
@@ -78,6 +79,6 @@ export function valueExists(pointer, value, callback) {
   this.findOne(selector, { include: ['_id'] }, (error, document) => {
 
     if (error) { return callback(error); }
-    callback(null, document._id ? true : false);
+    callback(null, document ? true : false);
   });
 }
