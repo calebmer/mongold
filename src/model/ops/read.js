@@ -5,7 +5,22 @@ import {getCallback} from '../../utils';
 
 var internals = {};
 
-internals.formatOptions = function (options) {
+internals.formatArgs = function (args) {
+
+  if (!this._collection) { throw new Error('Wait for a MongoDB connection to be established before finding documents'); }
+
+  args = _.toArray(args);
+  var callback = getCallback(args);
+  var selector = args.shift() || {};
+  var options = args.shift() || {};
+
+  if (selector._id && !(selector._id instanceof ObjectId)) {
+    selector._id = new ObjectId(selector._id);
+  }
+
+  _.defaults(options, { projection: {} });
+
+  if (_.isArray(options)) { options = { include: options }; }
 
   if (_.isArray(options.include)) { options.include.forEach(property => options.projection[property] = 1); }
   if (_.isArray(options.exclude)) { options.exclude.forEach(property => options.projection[property] = 0); }
@@ -19,67 +34,34 @@ internals.formatOptions = function (options) {
       return value;
     });
   }
+
+  return {selector, options, callback};
 };
 
-internals.getCursor = _.memoize((collection, selector, options) => {
+export function find() {
 
-  var cursor = collection.find(selector, options.projection);
+  var {selector, options, callback} = internals.formatArgs.call(this, arguments);
+
+  var cursor = this._collection.find(selector, options.projection);
 
   if (options.sort) { cursor.sort(options.sort); }
   if (options.skip) { cursor.skip(options.skip); }
   if (options.limit) { cursor.limit(options.limit); }
 
-  return cursor;
-});
+  cursor.map(document => new this(document, false));
 
-export function find() {
+  if (!callback) { return cursor; }
+  cursor.toArray((error, documents) => {
 
-  var args = _.toArray(arguments);
-  var callback = getCallback(args) || Assert.ifError;
-  var selector = args.shift() || {};
-  var options = args.shift() || {};
-
-  if (selector._id && !(selector._id instanceof ObjectId)) {
-    selector._id = new ObjectId(selector._id);
-  }
-
-  _.defaults(options, {
-    cursor: false,
-    projection: {}
-  });
-
-  internals.formatOptions(options);
-
-  this.on('ready', () => {
-
-    var cursor = internals.getCursor(this._collection, selector, options);
-
-    // If the user wants the cursor
-    if (options.cursor) {
-      callback(null, cursor);
-    }
-
-    cursor.toArray((error, documents) => {
-
-      if (error) { return callback(error); }
-
-      // Use constructor on documents
-      documents = documents.map(document => new this(document, false));
-
-      callback(null, documents);
-    });
+    callback(error, documents);
+    cursor.close();
   });
 }
 
 export function findOne() {
 
-  var args = _.toArray(arguments);
-  var callback = getCallback(args) || Assert.ifError;
+  var {selector, options, callback} = internals.formatArgs.call(this, arguments);
+  callback = callback || Assert.ifError;
 
-  var selector = args.shift() || {};
-  var options = args.shift() || {};
-
-  _.extend(options, { limit: 1 });
-
-  this.find(selector, options, (error, documents) => callback(error, documents[0]));
+  this._collection.findOne(selector, options.projection, (error, document) => callback(error, new this(document)));
 }
