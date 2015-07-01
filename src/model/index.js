@@ -59,8 +59,6 @@ function Model(name, options = {}) {
   constructor.getUrl = (id) => id ? options.documentEndpoint.replace(':id', id) : undefined;
 
   constructor.prototype = Object.create({
-    // For whatever reason this gets removed
-    constructor,
     clean: function () { return bind('clean', this, arguments); },
     check: function () { return bind('check', this, arguments); },
     validate: function () { return bind('validate', this, arguments); },
