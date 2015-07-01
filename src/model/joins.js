@@ -20,10 +20,7 @@ export function join(pointer, model) {
 
 export function linkify(document, onLink) {
 
-  var linkedDocument = {
-    '@id': document.getUrl()
-  };
-
+  var linkedDocument = { '@id': this.getUrl(document._id) };
   var dontCopy = ['/_id'];
 
   _.each(this._joins, (model, pointer) => {
