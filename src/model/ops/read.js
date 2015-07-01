@@ -15,7 +15,11 @@ internals.formatArgs = function (args) {
   var options = args.shift() || {};
 
   if (selector._id && !(selector._id instanceof ObjectId)) {
-    selector._id = new ObjectId(selector._id);
+    try {
+      selector._id = new ObjectId(selector._id);
+    } catch (e) {
+      // Silence
+    }
   }
 
   _.defaults(options, { projection: {} });
