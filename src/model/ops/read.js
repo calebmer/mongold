@@ -69,7 +69,7 @@ export function findOne() {
   callback = callback || Assert.ifError;
 
   this._collection.findOne(selector, options.projection,
-    (error, document) => callback(error, document ? new this(document) : undefined));
+    (error, document) => callback(error, document ? new this(document, false) : undefined));
 }
 
 export function valueExists(pointer, value, callback) {
