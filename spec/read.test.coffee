@@ -67,3 +67,13 @@ describe 'read operations', ->
         document.x.should.be.below lastValue
         lastValue = document.x
       done()
+
+
+  it 'can detect if value exists', (done) ->
+    Test.b.valueExists '/x', 7, (e, exists) ->
+      return done e if e?
+      exists.should.be.exactly false
+      Test.b.valueExists '/y', 2, (e, exists) ->
+        return done e if e?
+        exists.should.be.exactly true
+        done()

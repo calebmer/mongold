@@ -1,6 +1,7 @@
 import _ from 'lodash';
 import Assert from 'assert';
 import {ObjectId} from 'mongodb';
+import Pointer from 'json-pointer';
 import {getCallback} from '../../utils';
 
 var internals = {};
@@ -68,4 +69,15 @@ export function findOne() {
   callback = callback || Assert.ifError;
 
   this._collection.findOne(selector, options.projection, (error, document) => callback(error, new this(document)));
+}
+
+export function valueExists(pointer, value, callback) {
+
+  var selector = {};
+  Pointer.set(selector, pointer, value);
+  this.findOne(selector, { include: ['_id'] }, (error, document) => {
+
+    if (error) { return callback(error); }
+    callback(null, document._id ? true : false);
+  });
 }
