@@ -4,6 +4,29 @@ import Pointer from 'json-pointer';
 import {ObjectId} from 'mongodb';
 import {getCallback} from '../utils';
 
+var internals = {};
+
+internals.idFromUrl = url => {
+
+  url = url.split('/');
+  var id = url[url.length - 1];
+
+  try {
+    return new ObjectId(id);
+  } catch (error) { /* Silence */ }
+};
+
+internals.copy = (from, to, dontCopy) => {
+
+  dontCopy = new RegExp('^' + dontCopy.map(pointer => _.escapeRegExp(pointer)).join('|'));
+
+  _.each(Pointer.dict(from), (value, pointer) => {
+    // We are using a bad property, don't copy
+    if (dontCopy.test(pointer)) { return; }
+    Pointer.set(to, pointer, value);
+  });
+};
+
 export function join(pointer, model) {
 
   if (_.isObject(pointer)) {
@@ -39,15 +62,28 @@ export function linkify(document, onLink) {
     onLink(model, id);
   });
 
-  dontCopy = new RegExp('^' + dontCopy.map(pointer => _.escapeRegExp(pointer)).join('|'));
-
-  _.each(Pointer.dict(document), (value, pointer) => {
-    // We are using a bad property, don't copy
-    if (dontCopy.test(pointer)) { return; }
-    Pointer.set(linkedDocument, pointer, value);
-  });
+  internals.copy(document, linkedDocument, dontCopy);
 
   return linkedDocument;
+}
+
+export function delinkify(linkedDocument) {
+
+  var document = { _id: internals.idFromUrl(linkedDocument['@id']) };
+  var dontCopy = ['/@id'];
+
+  _.each(this._joins, (model, pointer) => {
+
+    if (!Pointer.has(document, pointer)) { return; }
+    var url = Pointer.get(document, pointer)['@id'];
+    if (!url) { return; }
+    Pointer.set(linkedDocument, pointer, internals.idFromUrl(url));
+    dontCopy.push(pointer);
+  });
+
+  internals.copy(linkedDocument, document, dontCopy);
+
+  return document;
 }
 
 // TODO: STREAMIFY
