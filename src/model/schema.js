@@ -17,8 +17,8 @@ internals.recompileValidators = function (reset) {
     return;
   }
 
-  this._schema.validate = Validator(this._schema.object, { verbose: true });
-  this._schema.validateGreedily = Validator(this._schema.object, { verbose: true, greedy: true });
+  this._schema.validate = Validator(this._schema.object);
+  this._schema.validateGreedily = Validator(this._schema.object, { greedy: true });
   this._schema.filter = Validator.filter(this._schema.object, { additionalProperties: false });
 };
 
