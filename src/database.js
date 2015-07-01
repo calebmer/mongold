@@ -5,6 +5,7 @@ import {MongoClient} from 'mongodb';
 
 class Database extends EventEmitter {
   constructor(url) {
+
     super();
     whenReady(this);
 
@@ -22,6 +23,7 @@ class Database extends EventEmitter {
     });
   }
   disconnect() {
+
     this.on('ready', () => {
 
       this._connection.close();
