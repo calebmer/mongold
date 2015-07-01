@@ -18,14 +18,14 @@ export function join(pointer, model) {
   this._joins[pointer] = model;
 }
 
-export function fetch() {
+export function graph() {
 
   var args = _.toArray(arguments);
   var callback = _.once(getCallback(args) || Assert.ifError);
   var selector = args.shift() || {};
   var options = args.shift() || {};
 
-  var graph = [];
+  var theGraph = [];
   var waitingOn = 0;
 
   function next(error) {
@@ -33,11 +33,11 @@ export function fetch() {
     if (error) { return callback(error); }
     waitingOn--;
     if (waitingOn === 0) {
-      callback(null, graph);
+      callback(null, theGraph);
     }
   }
 
-  function doFetch(document) {
+  function fetch(document) {
 
     _.each(document.constructor._joins, (model, pointer) => {
 
@@ -60,13 +60,13 @@ export function fetch() {
         Pointer.set(document, pointer, { '@id': joinedDocument.getUrl() });
 
         // Run the fetch command on the new document
-        doFetch(joinedDocument);
+        fetch(joinedDocument);
       });
     });
 
     document['@id'] = document.getUrl();
     delete document._id;
-    graph.push(document);
+    theGraph.push(document);
     next();
   }
 
@@ -74,6 +74,6 @@ export function fetch() {
 
     if (error) { return callback(error); }
     waitingOn += documents.length;
-    documents.forEach(doFetch);
+    documents.forEach(fetch);
   });
 }

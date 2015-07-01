@@ -46,7 +46,7 @@ describe 'join methods', ->
 
 
   it 'can fetch a graph', (done) ->
-    A.fetch (e, documents) ->
+    A.graph (e, documents) ->
       done e if e?
       console.log documents
       documents.should.containDeep [hello: 'world']
