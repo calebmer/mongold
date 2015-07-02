@@ -1,6 +1,6 @@
 {
   "name": "mongold",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "description": "A MongoDB ORM for the Linked Data age—WIP",
   "author": "Caleb Meredith <calebmeredith8@gmail.com>",
   "keywords": [
@@ -26,6 +26,7 @@
     "debug": "^2.2.0",
     "is-my-json-valid": "^2.12.0",
     "json-pointer": "^0.3.0",
+    "json-schema-parser": "^0.1.0",
     "lodash": "^3.9.3",
     "mongodb": "^2.0.33"
   },

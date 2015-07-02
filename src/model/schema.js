@@ -1,5 +1,6 @@
 import _ from 'lodash';
 import Validator from 'is-my-json-valid';
+import Parser from 'json-schema-parser';
 
 var internals = {};
 
@@ -85,6 +86,9 @@ export function attachSchema(attachment) {
       'properties': { '_id': {} }
     };
   }
+
+  // Resolve local refs
+  attachment = Parser.parse(attachment);
 
   // Merge the schemas, if we are merging arrays concatenate them and make sure values are unique
   _.merge(this._schema.object, attachment, (a, b) => _.isArray(a) ? _.unique(a.concat(b)) : undefined);
