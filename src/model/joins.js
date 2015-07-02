@@ -45,9 +45,18 @@ export function join(pointer, model) {
   this._joins[pointer] = model;
 }
 
-export function linkify(document, onLink) {
+export function linkify(document, context, onLink) {
 
-  var linkedDocument = { '@id': this.getUrl(document._id) };
+  if (_.isFunction(context)) {
+    onLink = context;
+    context = undefined;
+  }
+
+  var linkedDocument = {
+    '@context': context,
+    '@id': this.getUrl(document._id)
+  };
+
   var dontCopy = ['/_id'];
 
   _.each(this._joins, (model, pointer) => {
@@ -74,6 +83,7 @@ export function linkify(document, onLink) {
 export function delinkify(linkedDocument) {
 
   if (!linkedDocument) { return {}; }
+  delete linkedDocument['@context'];
   var document = { _id: internals.idFromUrl(linkedDocument['@id']) };
   var dontCopy = ['/@id'];
 
@@ -122,6 +132,7 @@ export function graph() {
 
   function fetch(document) {
 
+    document.restrict(0);
     graphedIds.push(document._id.toString());
 
     var linkedDocument = document.linkify((model, id) => {
@@ -137,7 +148,7 @@ export function graph() {
         // If the document was not found
         if (!joinedDocument) { return next(); }
         // Run the fetch command on the new document
-        fetch(joinedDocument.restrict(0));
+        fetch(joinedDocument);
       });
     });
 
