@@ -137,7 +137,7 @@ export function graph() {
         // If the document was not found
         if (!joinedDocument) { return next(); }
         // Run the fetch command on the new document
-        fetch(joinedDocument);
+        fetch(joinedDocument.restrict(0));
       });
     });
 
