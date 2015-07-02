@@ -132,8 +132,9 @@ export function graph() {
 
   function fetch(document) {
 
-    document.restrict(0);
+    if (_.contains(graphedIds, document._id.toString())) { return next(); }
     graphedIds.push(document._id.toString());
+    document.restrict(0);
 
     var linkedDocument = document.linkify((model, id) => {
       // If the id has already been graphed, skip
