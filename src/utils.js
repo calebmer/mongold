@@ -27,3 +27,5 @@ export function getCallback(args) {
     return args.pop();
   }
 }
+
+export var pointerToPath = pointer => pointer.replace(/^\//, '').replace(/\//, '.');

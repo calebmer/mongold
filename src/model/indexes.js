@@ -1,6 +1,6 @@
 import _ from 'lodash';
 import Assert from 'assert';
-import {getCallback} from '../utils';
+import {getCallback, pointerToPath} from '../utils';
 
 export function index() {
 
@@ -11,6 +11,10 @@ export function index() {
 
   if (_.isString(keys)) { keys = { [keys]: 1 }; }
   _.defaults(options, { unique: true });
+
+  if (options.unique) { Object.keys(keys).forEach(key => this.unique(key)); }
+
+  keys = _.mapKeys(keys, (value, key) => pointerToPath(key));
 
   this.on('ready', () => this._collection.ensureIndex(keys, options, error => {
 

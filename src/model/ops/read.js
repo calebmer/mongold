@@ -2,11 +2,9 @@ import _ from 'lodash';
 import Assert from 'assert';
 import {ObjectId} from 'mongodb';
 import Pointer from 'json-pointer';
-import {getCallback} from '../../utils';
+import {getCallback, pointerToPath} from '../../utils';
 
 var internals = {};
-
-internals.pointerToPath = pointer => pointer.replace(/^\//, '').replace(/\//, '.');
 
 internals.formatArgs = function (args) {
 
@@ -32,8 +30,8 @@ internals.formatArgs = function (args) {
 
   if (options.terse && this._terse) { options.include = (options.include || []).concat(this._terse); }
 
-  if (_.isArray(options.include)) { options.include.map(internals.pointerToPath).forEach(property => options.projection[property] = 1); }
-  if (_.isArray(options.exclude)) { options.exclude.map(internals.pointerToPath).forEach(property => options.projection[property] = 0); }
+  if (_.isArray(options.include)) { options.include.map(pointerToPath).forEach(property => options.projection[property] = 1); }
+  if (_.isArray(options.exclude)) { options.exclude.map(pointerToPath).forEach(property => options.projection[property] = 0); }
 
   // Allow for prettier sort definitions
   if (options.sort) {
@@ -75,17 +73,6 @@ export function findOne() {
 
   this._collection.findOne(selector, options.projection,
     (error, document) => callback(error, document ? new this(document, false) : undefined));
-}
-
-export function valueExists(pointer, value, callback) {
-
-  var selector = {};
-  Pointer.set(selector, pointer, value);
-  this.findOne(selector, { include: ['_id'] }, (error, document) => {
-
-    if (error) { return callback(error); }
-    callback(null, document ? true : false);
-  });
 }
 
 export function terse(pointers) {

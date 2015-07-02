@@ -5,11 +5,11 @@ describe 'index methods', ->
 
 
   it 'can add an index', (done) ->
-    Test.b.index 'a', (e) ->
+    Test.b.index '/a', (e) ->
       return done e if e?
-      Test.b.index 'c', unique: false, (e) ->
+      Test.b.index '/c', unique: false, (e) ->
         return done e if e?
-        Test.b.index {d: 1, e: -1}, (e) ->
+        Test.b.index {'/d': 1, '/e': -1}, (e) ->
           return done e if e?
           Test.a.indexInformation (e, result) ->
             return done e if e?

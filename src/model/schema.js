@@ -1,6 +1,9 @@
 import _ from 'lodash';
-import Validator from 'is-my-json-valid';
+import Async from 'async';
+import Pointer from 'json-pointer';
 import Parser from 'json-schema-parser';
+import Validator from 'is-my-json-valid';
+import {getCallback, pointerToPath} from '../utils';
 
 var internals = {};
 
@@ -100,4 +103,46 @@ export function detachSchema() {
   internals.updateState.call(this);
   delete this._schema.object;
   internals.recompileValidators.call(this, true);
+}
+
+export function unique(pointers) {
+
+  if (!_.isArray(pointers)) { pointers = [pointers]; }
+  this._unique = (this._unique || []).concat(pointers);
+}
+
+export function validateUnique() {
+
+  var args = _.toArray(arguments);
+  var callback = getCallback(args);
+  var document = args.shift();
+  var options = args.shift() || {};
+
+  if (!_.isFunction(callback)) { throw new Error('To validate uniquness a callback must be defined'); }
+
+  var errors = this.validate(document, options);
+
+  Async.each(this._unique, (pointer, next) => {
+
+    if (!Pointer.has(document, pointer)) { return next(); }
+    var value = Pointer.get(document, pointer);
+    var selector = {};
+    Pointer.set(selector, pointer, value);
+
+    this.findOne(selector, { include: ['_id'] }, (error, alreadyExists) => {
+
+      if (error) { return next(error); }
+      if (alreadyExists) {
+        errors.push({
+          field: 'data.' + pointerToPath(pointer),
+          message: 'already exists'
+        });
+      }
+      next();
+    });
+  }, error => {
+
+    if (error) { return callback(error); }
+    callback(null, errors);
+  });
 }
