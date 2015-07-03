@@ -160,6 +160,7 @@ export function graph() {
   this.find(selector, options, (error, documents) => {
 
     if (error) { return callback(error); }
+    if (documents.length === 0) { return callback(null, []); }
     waitingOn += documents.length;
     documents.forEach(fetch);
   });
