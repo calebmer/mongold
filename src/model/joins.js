@@ -52,11 +52,10 @@ export function linkify(document, context, onLink) {
     context = undefined;
   }
 
-  var linkedDocument = {
-    '@context': context,
-    '@id': this.getUrl(document._id),
-    '@type': this._type
-  };
+  var linkedDocument = {};
+  if (context)      { linkedDocument['@context'] = context; }
+  if (document._id) { linkedDocument['@id'] = this.getUrl(document._id); }
+  if (this._type)   { linkedDocument['@type'] = this._type; }
 
   var dontCopy = ['/_id'];
 
