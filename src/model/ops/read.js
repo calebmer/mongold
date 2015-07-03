@@ -1,7 +1,6 @@
 import _ from 'lodash';
 import Assert from 'assert';
 import {ObjectId} from 'mongodb';
-import Pointer from 'json-pointer';
 import {getCallback, pointerToPath} from '../../utils';
 
 var internals = {};
@@ -30,8 +29,16 @@ internals.formatArgs = function (args) {
 
   if (options.terse && this._terse) { options.include = (options.include || []).concat(this._terse); }
 
+  if (_.isArray(options.include) && _.isArray(options.exclude)) {
+    options.include = _.difference(options.include, options.exclude);
+    delete options.exclude;
+  }
+
   if (_.isArray(options.include)) { options.include.map(pointerToPath).forEach(property => options.projection[property] = 1); }
   if (_.isArray(options.exclude)) { options.exclude.map(pointerToPath).forEach(property => options.projection[property] = 0); }
+
+  delete options.include;
+  delete options.exclude;
 
   // Allow for prettier sort definitions
   if (options.sort) {
