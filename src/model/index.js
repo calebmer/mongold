@@ -10,7 +10,8 @@ function Model(name, options = {}) {
   _.defaults(options, {
     // Use the default database if none was passed
     database: Mongold.database,
-    documentEndpoint: `/${name}/:id`
+    documentEndpoint: `/${name}/:id`,
+    type: _.capitalize(name)
   });
 
   if (!options.database || !(options.database instanceof Database)) {
@@ -45,6 +46,7 @@ function Model(name, options = {}) {
   // Define the uneditable name and database values
   Object.defineProperty(constructor, '_name', { value: name });
   Object.defineProperty(constructor, '_database', { value: options.database });
+  constructor._type = options.type;
 
   constructor._database.on('ready', () => {
 

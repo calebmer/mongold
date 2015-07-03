@@ -54,7 +54,8 @@ export function linkify(document, context, onLink) {
 
   var linkedDocument = {
     '@context': context,
-    '@id': this.getUrl(document._id)
+    '@id': this.getUrl(document._id),
+    '@type': this._type
   };
 
   var dontCopy = ['/_id'];
@@ -84,6 +85,7 @@ export function delinkify(linkedDocument) {
 
   if (!linkedDocument) { return {}; }
   delete linkedDocument['@context'];
+  delete linkedDocument['@type'];
   var document = { _id: internals.idFromUrl(linkedDocument['@id']) };
   var dontCopy = ['/@id'];
 
