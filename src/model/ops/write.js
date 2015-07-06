@@ -1,5 +1,6 @@
 import _ from 'lodash';
 import Assert from 'assert';
+import {getCallback} from '../../utils';
 import {Id} from '../../index';
 
 var internals = {};
@@ -10,13 +11,13 @@ internals.writeAction = action => {
 
     var args = _.toArray(arguments);
     var collection = this._collection;
-    var callback = Assert.ifError;
+    var callback = getCallback(args);
     var hasCallback = false;
     var formatResponse;
 
-    if (_.isFunction(_.last(args))) {
-      callback = args.pop();
+    if (!callback) {
       hasCallback = true;
+      callback = Assert.ifError;
     }
 
     var document;

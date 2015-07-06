@@ -1,7 +1,7 @@
 import _ from 'lodash';
-import {whenReady} from '../utils';
 import Assert from 'assert';
 import {EventEmitter} from 'events';
+import {whenReady, getCallback} from '../utils';
 import Mongold from '../index';
 import Database from '../database';
 
@@ -67,12 +67,13 @@ function Model(name, options = {}) {
     restrict: function () { return bind('restrict', this, arguments); },
     linkify: function () { return bind('linkify', this, arguments); },
     getUrl: function () { return constructor.getUrl(this._id); },
-    save: function (callback) {
+    save: function () {
 
-      var document = _.clone(this);
-      callback = callback || Assert.ifError;
+      var args = _.toArray(arguments);
+      var callback = getCallback(args) || Assert.ifError;
+      var options = args.shift() || {};
 
-      constructor.save(document, (error, id) => {
+      constructor.save(_.clone(document), options, (error, id) => {
 
         this._id = id;
         callback(error, id);
