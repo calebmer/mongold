@@ -73,7 +73,7 @@ function Model(name, options = {}) {
       var callback = getCallback(args) || Assert.ifError;
       var options = args.shift() || {};
 
-      constructor.save(_.clone(document), options, (error, id) => {
+      constructor.save(_.clone(this), options, (error, id) => {
 
         this._id = id;
         callback(error, id);
