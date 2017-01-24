@@ -1,4 +1,6 @@
 # Mongold
+
+[![Greenkeeper badge](https://badges.greenkeeper.io/calebmer/mongold.svg)](https://greenkeeper.io/)
 A NodeJS MongoDB ORM for the Linked Data age.
 
 ## Word of Warning
